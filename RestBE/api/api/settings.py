@@ -25,7 +25,7 @@ SECRET_KEY = 'xqyc_m^s-5xpa!5g@s4d7-n+7kvv5q8%)4s6*zkahel*s2gk@h'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'authapp'
 ]
 
 MIDDLEWARE = [
@@ -75,8 +76,12 @@ WSGI_APPLICATION = 'api.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'citlabrdb',
+        'USER': 'postgres',
+        'PASSWORD': 'root',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
