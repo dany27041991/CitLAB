@@ -2,6 +2,8 @@ import { AfterViewInit, Component, ElementRef, EventEmitter, NgZone, OnInit, Out
 import { NavigationItem } from '../navigation';
 import { NextConfig } from '../../../../../app-config';
 import { Location } from '@angular/common';
+import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-nav-content',
@@ -24,7 +26,7 @@ export class NavContentComponent implements OnInit, AfterViewInit {
   @ViewChild('navbarContent', {static: false}) navbarContent: ElementRef;
   @ViewChild('navbarWrapper', {static: false}) navbarWrapper: ElementRef;
 
-  constructor(public nav: NavigationItem, private zone: NgZone, private location: Location) {
+  constructor(public nav: NavigationItem, private zone: NgZone, private location: Location, private auth: AuthService, private router: Router) {
     this.nextConfig = NextConfig.config;
     this.windowWidth = window.innerWidth;
 
@@ -146,4 +148,8 @@ export class NavContentComponent implements OnInit, AfterViewInit {
     }
   }
 
+  logout(){
+    this.auth.logout();
+    this.router.navigate(['auth/signin-v2']);
+  }
 }

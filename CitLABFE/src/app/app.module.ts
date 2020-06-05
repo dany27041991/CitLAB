@@ -24,6 +24,12 @@ import { ToggleFullScreenDirective } from './theme/shared/full-screen/toggle-ful
 /* Menu Items */
 import { NavigationItem } from './theme/layout/admin/navigation/navigation';
 import { NgbButtonsModule, NgbDropdownModule, NgbTabsetModule, NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { AuthGuardService } from './guards/auth-guard.service';
+import { CookieService } from 'ngx-cookie-service';
+
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from 'src/app/services/auth.service';
+import { AccessGuardService } from './guards/access-auth-guard.service';
 
 @NgModule({
   declarations: [
@@ -50,9 +56,10 @@ import { NgbButtonsModule, NgbDropdownModule, NgbTabsetModule, NgbTooltipModule 
     NgbDropdownModule,
     NgbTooltipModule,
     NgbButtonsModule,
-    NgbTabsetModule
+    NgbTabsetModule,
+    HttpClientModule,
   ],
-  providers: [NavigationItem],
+  providers: [NavigationItem, AuthGuardService, AccessGuardService, CookieService, AuthService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

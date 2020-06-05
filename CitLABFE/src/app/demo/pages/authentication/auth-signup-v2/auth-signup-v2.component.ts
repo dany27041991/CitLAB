@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthService } from 'src/app/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth-signup-v2',
@@ -7,9 +9,11 @@ import { Component, OnInit } from '@angular/core';
 })
 export class AuthSignupV2Component implements OnInit {
 
-  constructor() { }
+  constructor(private auth: AuthService, private router: Router) { }
 
   ngOnInit() {
+    if(this.auth.isAuthenticated()){
+      this.router.navigate(['dashboard/pubblications-search']);
+    }
   }
-
 }

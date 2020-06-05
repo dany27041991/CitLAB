@@ -6,7 +6,7 @@ const routes: Routes = [
     path: '',
     children: [
       {
-        path: 'default',
+        path: 'pubblications-search',
         loadChildren: () => import('./dash-default/dash-default.module').then(module => module.DashDefaultModule)
       }
     ]

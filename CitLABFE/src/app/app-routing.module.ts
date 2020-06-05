@@ -1,45 +1,24 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
+import { Routes, RouterModule, CanActivate } from '@angular/router';
 import { AdminComponent } from './theme/layout/admin/admin.component';
 import {AuthComponent} from './theme/layout/auth/auth.component';
+import { AuthGuardService } from './guards/auth-guard.service';
+import { AccessGuardService } from './guards/access-auth-guard.service';
 
 const routes: Routes = [
   {
     path: '',
     component: AdminComponent,
+    canActivate: [AuthGuardService],
     children: [
       {
         path: '',
-        redirectTo: 'dashboard/default',
+        redirectTo: 'dashboard/pubblications-search',
         pathMatch: 'full'
       },
       {
         path: 'dashboard',
         loadChildren: () => import('./demo/dashboard/dashboard.module').then(module => module.DashboardModule)
-      },
-      {
-        path: 'layout',
-        loadChildren: () => import('./demo/pages/layout/layout.module').then(module => module.LayoutModule)
-      },
-      {
-        path: 'basic',
-        loadChildren: () => import('./demo/ui-elements/ui-basic/ui-basic.module').then(module => module.UiBasicModule)
-      },
-      {
-        path: 'forms',
-        loadChildren: () => import('./demo/pages/form-elements/form-elements.module').then(module => module.FormElementsModule)
-      },
-      {
-        path: 'tbl-bootstrap',
-        loadChildren: () => import('./demo/pages/tables/tbl-bootstrap/tbl-bootstrap.module').then(module => module.TblBootstrapModule)
-      },
-      {
-        path: 'charts',
-        loadChildren: () => import('./demo/pages/core-chart/core-chart.module').then(module => module.CoreChartModule)
-      },
-      {
-        path: 'maps',
-        loadChildren: () => import('./demo/pages/core-maps/core-maps.module').then(module => module.CoreMapsModule)
       },
       {
         path: 'sample-page',
@@ -50,6 +29,7 @@ const routes: Routes = [
   {
     path: '',
     component: AuthComponent,
+    canActivate: [AccessGuardService],
     children: [
       {
         path: 'auth',
