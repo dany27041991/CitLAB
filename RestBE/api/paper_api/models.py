@@ -4,8 +4,8 @@ from category_api.models import Category
 
 # Create your models here.
 class Paper(models.Model):
-    title = models.CharField(max_length=200, null=True, blank=True)
-    abstract = models.TextField(null=True, blank=True)
+    title = models.CharField(max_length=200, blank=True)
+    abstract = models.TextField(blank=True)
     type_paper = models.CharField(max_length=200, null=True, blank=True)
     isbn = models.CharField(max_length=200,null=True)
     issn = models.CharField(max_length=200,null=True)
