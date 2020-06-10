@@ -9,23 +9,21 @@ import { Router } from '@angular/router';
 })
 export class AuthService {
 
-  constructor(private http: HttpClient, private cookieService: CookieService, public router: Router) { 
-  }
+  constructor(private http: HttpClient, private cookieService: CookieService, public router: Router) {}
 
-  ngOnInit(){
-  }
+  ngOnInit(){}
 
-  setLogged(token){
+  setLogged(token) {
     this.cookieService.set('auth-token', token, 3600);
   }
 
-  login(email: string, password: string){
-    return this.http.post(environment.url+'auth/token/login', { email: email, password: password });
+  login(email: string, password: string) {
+    return this.http.post(environment.url + 'auth/token/login', { email: email, password: password });
   }
 
   isAuthenticated(): boolean {
     const token = this.cookieService.get('auth-token');
-    if(token){
+    if (token) {
       return true;
     }
     return false;
@@ -33,5 +31,13 @@ export class AuthService {
 
   logout() {
     this.cookieService.delete('auth-token');
+  }
+
+  getToken(): string {
+    const token = this.cookieService.get('auth-token');
+    if (token) {
+      return token;
+    }
+    this.router.navigate(['auth/signin-v2']);
   }
 }

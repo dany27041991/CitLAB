@@ -8,18 +8,67 @@
           <div class="input-group-prepend" ngbDropdown [placement]="'bottom-left'">
               <button class="btn btn-primary" ngbDropdownToggle type="button">Search by</button>
               <div ngbDropdownMenu>
-                <a class="dropdown-item" href="javascript:">Full Text</a>
-                <a class="dropdown-item" href="javascript:">Keywords</a>
-                <a class="dropdown-item" href="javascript:">Something else here</a>
+                <a class="dropdown-item" href="javascript:" (click)="searchPub(null, null)">Full Text</a>
+                <a class="dropdown-item" href="javascript:" (click)="searchPub(null, null)">Keywords</a>
                 <div role="separator" class="dropdown-divider"></div>
-                <a class="dropdown-item" href="javascript:">Separated link</a>
+                <a class="dropdown-item" href="javascript:">Advanced Search</a>
               </div>
             </div>
         </div>
       </div>
       <div class="card-body">
-        <h5 class="card-title">Special title treatment</h5>
+        <div class="row" *ngIf="!flagSearch; else donesearch">
+          <div class="col-12">
+            <h4>Fill in your search filter.</h4>
+          </div>
+        </div>
+        <ng-template #donesearch>
+          <div *ngIf="!flagError; else errorsearch">
+            <div *ngIf="docsList; else nodocfound">
+                <div class="row pl-2 pr-2" *ngFor="let doc of docsList | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage,
+                  totalItems: total, id: 'first' }">
+                  <div class="col-12">
+                    <div class="card border-primary">
+                      <div class="card-header" style="color: white; background-color: #FAFCFF">
+                        <h5>{{checkValue(doc['type_paper'])}} - {{checkValue(doc['title'])}}</h5>
+                      </div>
+                      <div class="card-body" id="module">
+                        <blockquote class="blockquote mb-2">
+                          <details>
+                            <summary style="font-size: medium"><b>Astract - </b>{{checkValue(doc['abstract']).substring(0, [360])}}...</summary>
+                            <div style="font-size: 18px; margin-left: 20px; margin-top: 10px;"><p>{{checkValue(doc['abstract'])}}</p></div>
+                          </details>
+                          <footer class="blockquote-footer" style="font-size: 14px;"><b>Written by: </b>{{checkValue(doc['writers'])}}.
+                            <div style="float: right"><div *ngIf="doc['created_on']; else alternativeyear"><b>Created on: </b>{{checkValue(doc['created_on'])}}</div>
+                            <ng-template #alternativeyear><b>Created on: </b>{{checkValue(doc['year'])}}</ng-template></div>
+                          </footer>
+                          <cite title="Source Title"></cite>
+                        </blockquote>
+                        <a href="#" class="card-link">Quoted from {{doc['n_citation']}}</a>
+                        <a href="#" class="card-link">All {{doc['n_version']}} versions</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <div class="row">
+                <div class="col-12 text-center">
+                  <pagination-controls (pageChange)="currentPage = $event" id="first" (click)="searchPub(null, currentPage)"></pagination-controls>
+                </div>
+              </div>
+            </div>
+            <ng-template #nodocfound><h4>Documents not founds.</h4></ng-template>
+          </div>
+          <ng-template #errorsearch>
+            <div class="alert alert-danger" role="alert">
+              A problem has occurred. Try again. If the problem persists, contact the administration.
+            </div>
+          </ng-template>
+        </ng-template>
       </div>
     </div>
   </div>
 </div>
+
+<ngx-spinner bdColor="rgba(255, 255, 255, 0.8)" size="medium" color="#0275d8" type="ball-spin-clockwise"></ngx-spinner>
+
+<tree-diagram [data]="data"></tree-diagram>

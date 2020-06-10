@@ -7,9 +7,9 @@ import { CookieService } from 'ngx-cookie-service';
 export class AuthGuardService implements CanActivate {
     constructor(public auth: AuthService, public router: Router, private cookieService: CookieService) { }
     canActivate(): boolean {
-        if(this.auth.isAuthenticated()){
+        if (this.auth.isAuthenticated()) {
             return true;
-        }else{
+        } else {
             this.router.navigate(['auth/signin-v2']);
         }
     }

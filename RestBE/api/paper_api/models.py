@@ -5,7 +5,7 @@ from category_api.models import Category
 # Create your models here.
 class Paper(models.Model):
     title = models.CharField(max_length=200, blank=True)
-    abstract = models.TextField(blank=True)
+    abstract = models.TextField(null=True)
     type_paper = models.CharField(max_length=200, null=True, blank=True)
     isbn = models.CharField(max_length=200,null=True)
     issn = models.CharField(max_length=200,null=True)
@@ -22,9 +22,8 @@ class Paper(models.Model):
     pdf = models.URLField(null=True)
     picture = models.URLField(null=True)
     added_on = models.DateTimeField(auto_now_add=True)
-    mentioned_in = models.ManyToManyField("self")
-    owns_version = models.ManyToManyField("self")
-    correlated_with = models.ManyToManyField("self")
+    mentioned_in = models.ManyToManyField("self",symmetrical=True)
+    owns_version = models.ManyToManyField("self",symmetrical=True)
     #searched_for = models.ManyToManyField(Research)
     have_category = models.ManyToManyField(Category)
     #created_by = models.ManyToManyField(Writer)
