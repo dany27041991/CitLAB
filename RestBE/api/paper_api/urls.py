@@ -3,5 +3,5 @@ from paper_api import views
 
 urlpatterns = [
     path('search/',views.catalog_search),
-    path('documents/<int:id>/', views.doc_tree),
+    path('doc-tree/<int:id>/', views.doc_tree),
 ]

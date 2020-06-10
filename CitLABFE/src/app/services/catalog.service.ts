@@ -22,4 +22,13 @@ export class CatalogService {
     return this.http.get(environment.url + 'catalog/search/?q=' + query + '&page=' + page,
       { headers: new HttpHeaders(headers) }) as Observable<PaperInterfacePagination>;
   }
+
+  treeDiagram(id): Observable<any> {
+    const headers = {
+      'Authorization': String('Token ' + this.auth.getToken()),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    return this.http.get(environment.url + 'catalog/doc-tree/' + id,
+      { headers: new HttpHeaders(headers) }) as Observable<any>;
+  }
 }

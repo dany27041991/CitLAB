@@ -59,17 +59,24 @@ def doc_tree(request, id):
     dirty_tree = iterate(serializer_class.data)
     clear_tree = remove_dupes(dirty_tree)
     print(len(clear_tree))
-    return Response(data=clear_tree, status=status.HTTP_200_OK)
+    return Response(data=dirty_tree, status=status.HTTP_200_OK)
 
-def iterate(object):
+def iterate(object, parent_id=None):
     global tree
-    obj = {
-        "guid": "",
-        "displayName": "",
-        "children": []
-    }
+    if parent_id is None:
+        obj = {
+            "guid": "",
+            "displayName": "",
+            "children": []
+        }
+    else:
+        obj = {
+            "guid": "",
+            "displayName": "",
+            "parentId": parent_id,
+            "children": []
+        }
     for key, item in object.items():
-        if len(tree) <= 100:
             if key is 'id':
                 obj['guid'] = item
             elif key is 'title':
@@ -84,10 +91,7 @@ def iterate(object):
                 tree.append(obj)
 
                 for i in range(size):
-                    iterate(item[i])
-        else:
-            break
-
+                    iterate(item[i],obj['guid'])
     return tree
 
 def remove_dupes(mylist):
