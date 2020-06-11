@@ -1,0 +1,183 @@
+<div class="row">
+  <div class="col-sm-12">
+    <div class="card">
+      <div class="card-header">
+        <h4>Do your research</h4>
+        <div class="input-group">
+          <input type="text" class="form-control" aria-label="Text input with segmented dropdown button" #searchText (keyup)="changeText($event)">
+          <div class="input-group-prepend" ngbDropdown [placement]="'bottom-left'">
+              <button class="btn btn-primary" ngbDropdownToggle type="button">Search by</button>
+              <div ngbDropdownMenu>
+                <a class="dropdown-item" href="javascript:" (click)="searchPub(null, null)">Full Text</a>
+                <a class="dropdown-item" href="javascript:" (click)="searchPub(null, null)">Keywords</a>
+                <div role="separator" class="dropdown-divider"></div>
+                <a class="dropdown-item" href="javascript:" (click)="openAdvancedSearch(advancedsearchcontent)">Advanced Search</a>
+              </div>
+            </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row" *ngIf="!flagSearch; else donesearch">
+          <div class="col-12">
+            <h4>Fill in your search filter.</h4>
+          </div>
+        </div>
+        <ng-template #donesearch>
+          <div *ngIf="!flagError; else errorsearch">
+            <div *ngIf="docsList; else nodocfound">
+                <div class="row pl-2 pr-2" *ngFor="let doc of docsList | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage,
+                  totalItems: total, id: 'first' }">
+                  <div class="col-12">
+                    <div class="card border-primary">
+                      <div class="card-header" style="color: white; background-color: #FAFCFF">
+                        <h5>{{checkValue(doc['type_paper'])}} - {{checkValue(doc['title'])}}</h5>
+                      </div>
+                      <div class="card-body" id="module">
+                        <blockquote class="blockquote mb-2">
+                          <details>
+                            <summary style="font-size: medium"><b>Astract - </b>{{checkValue(doc['abstract']).substring(0, [360])}}</summary>
+                            <div style="font-size: 18px; margin-left: 20px; margin-top: 10px;"><p>{{checkValue(doc['abstract'])}}</p></div>
+                          </details>
+                          <footer class="blockquote-footer" style="font-size: 14px;"><b>Written by: </b>{{checkValue(doc['writers'])}}.
+                            <div style="float: right"><div *ngIf="doc['created_on']; else alternativeyear"><b>Created on: </b>{{checkValue(doc['created_on'])}}</div>
+                            <ng-template #alternativeyear><b>Created on: </b>{{checkValue(doc['year'])}}</ng-template></div>
+                          </footer>
+                          <cite title="Source Title"></cite>
+                        </blockquote>
+                        <a class="card-link card-link-doc">Quoted from {{doc['mentioned_in'].length}}</a>
+                        <a class="card-link card-link-doc">All {{doc['n_version']}} versions</a>
+                        <a class="card-link card-link-doc" (click)="openTree(treecontent, doc['id'], checkValue(doc['title']))">Tree diagram for quotes</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <div class="row">
+                <div class="col-12 text-center">
+                  <pagination-controls (pageChange)="currentPage = $event" id="first" (click)="searchPub(null, currentPage)"></pagination-controls>
+                </div>
+              </div>
+            </div>
+            <ng-template #nodocfound><h4>Documents not founds.</h4></ng-template>
+          </div>
+          <ng-template #errorsearch>
+            <div class="alert alert-danger" role="alert">
+              {{errorMessage}}
+            </div>
+          </ng-template>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--MODAL TREE-->
+<ng-template #treecontent let-modal>
+  <div class="modal-header modal-header-tree">
+    <h4 class="modal-title" id="modal-basic-title-tree">Diagram Tree {{titleTree.toUpperCase()}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="container" *ngIf="!flagTree; else errortree">
+      <tree-diagram [data]="data"></tree-diagram>
+    </div>
+    <ng-template #errortree>
+      <div class="alert alert-danger" role="alert">
+        {{errorMessage}}
+      </div>
+    </ng-template>
+  </div>
+</ng-template>
+
+<!--ADVANCED SEARCH-->
+<ng-template #advancedsearchcontent let-modal>
+  <div class="modal-header modal-header-tree">
+    <h4 class="modal-title" id="modal-basic-title-advanced-search">Find Document</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body pl-5 pr-5">
+    <!-- Form -->
+    <form #advancedsearch="ngForm" (ngSubmit)="advancedSearch(advancedsearch)">
+      <div class="form-group row">
+        <label for="allWord" class="col-sm-4 col-form-label label-cls">with <b>all</b> the words</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" id="allWord" placeholder="" [value]="textsearch">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="allPhrase" class="col-sm-4 col-form-label label-cls">with <b>the exact phrase</b></label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" id="allPhrase" placeholder="">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="atLeastOne" class="col-sm-4 col-form-label label-cls">with <b>at least one</b> of the words</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" id="atLeastOne" placeholder="">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="withoutWords" class="col-sm-4 col-form-label label-cls"><b>without the words</b></label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" id="withoutWords" placeholder="">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="location" class="col-sm-4 col-form-label label-cls">where the words are found</label>
+        <div class="col-sm-8">
+          <select class="browser-default custom-select mb-4" id="location">
+            <option value="" selected>Choose option</option>
+            <option value="1">anywhere in the article</option>
+            <option value="2">in the title of the article</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="authors" class="col-sm-4 col-form-label label-cls">Return articles <b>written</b> by</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" id="authors" placeholder="">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label for="company" class="col-sm-4 col-form-label label-cls">Return articles <b>published</b> by</label>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" id="company" placeholder="">
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label label-cls">Return items from <b>dates</b> between</label>
+        <div class="col-sm-4 form-inline">
+          <input id="datestart" class="form-control" placeholder="yyyy-mm-dd" name="dp1" [(ngModel)]="model1" ngbDatepicker #d1="ngbDatepicker" (ngModelChange)="compareDate(model1, model2)">&nbsp;
+          <label style="cursor: pointer" for="datestart" (click)="d1.toggle()" class="label-cls">
+            <img src="../../../../assets/images/icon/calendar.png" class="img-fluid" alt="Responsive image" width="30px">
+          </label>
+        </div>
+        <div class="col-sm-4 form-inline">
+          <input id="dateend" class="form-control" placeholder="yyyy-mm-dd" name="dp2" [(ngModel)]="model2" ngbDatepicker #d2="ngbDatepicker" (ngModelChange)="compareDate(model1, model2)">&nbsp;
+          <label style="cursor: pointer" for="dateend" (click)="d2.toggle()" class="label-cls">
+            <img src="../../../../assets/images/icon/calendar.png" class="img-fluid" alt="Responsive image" width="30px">
+          </label>
+        </div>
+      </div>
+    </form>
+
+    <div class="alert alert-danger" role="alert" *ngIf="!flagButtonAdvancedSearch">
+      {{errorMessage}}
+    </div>
+  </div>
+  <div class="modal-footer p-2">
+    <button type="button" class="btn btn-primary" (click)="advancedSearch(advancedsearch)" [disabled]="!flagButtonAdvancedSearch">Search</button>
+  </div>
+</ng-template>
+
+<ngx-spinner bdColor="rgba(255, 255, 255, 0.8)" size="medium" color="#0275d8" type="ball-spin-clockwise"></ngx-spinner>

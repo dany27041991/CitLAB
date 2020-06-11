@@ -44,7 +44,14 @@ INSTALLED_APPS = [
     'category_api',
     'djoser',
     'corsheaders',
+    'django_elasticsearch_dsl',
 ]
+
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

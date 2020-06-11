@@ -18,11 +18,11 @@ const routes: Routes = [
       },
       {
         path: 'dashboard',
-        loadChildren: () => import('./demo/dashboard/dashboard.module').then(module => module.DashboardModule)
+        loadChildren: () => import('./citlab/dashboard/dashboard.module').then(module => module.DashboardModule)
       },
       {
         path: 'sample-page',
-        loadChildren: () => import('./demo/pages/sample-page/sample-page.module').then(module => module.SamplePageModule)
+        loadChildren: () => import('./citlab/pages/sample-page/sample-page.module').then(module => module.SamplePageModule)
       }
     ]
   },
@@ -33,7 +33,7 @@ const routes: Routes = [
     children: [
       {
         path: 'auth',
-        loadChildren: () => import('./demo/pages/authentication/authentication.module').then(module => module.AuthenticationModule)
+        loadChildren: () => import('./citlab/pages/authentication/authentication.module').then(module => module.AuthenticationModule)
       }
     ]
   }
