@@ -26,12 +26,23 @@ export class DashDefaultComponent implements OnInit {
   public titleTree = '';
   public model1: NgbDateStruct;
   public model2: NgbDateStruct;
+  public date: {year: number, month: number};
   public textsearch = '';
   public flagButtonAdvancedSearch = true;
   public errorMessage = '';
   public lastTypeSearch = null;
   public lastTextSearch = null;
-  public lastAdvancedSearch = null;
+  public lastAdvancedSearch = {
+    alw: '',
+    ap: '',
+    aw: '',
+    dp1: null,
+    dp2: null,
+    rap: '',
+    raw: '',
+    waf: '',
+    wtw: '',
+  };
 
 
   data = {
@@ -46,7 +57,8 @@ export class DashDefaultComponent implements OnInit {
   status: string;
 
   constructor(private auth: AuthService, private catalog: CatalogService, private SpinnerService: NgxSpinnerService,
-              private modalService: NgbModal, private calendar: NgbCalendar, private cd: ChangeDetectorRef) {this.isConnected = false;
+              private modalService: NgbModal, private calendar: NgbCalendar, private cd: ChangeDetectorRef) {
+    this.isConnected = false;
   }
 
   ngOnInit() {
@@ -77,6 +89,10 @@ export class DashDefaultComponent implements OnInit {
         this.flagButtonAdvancedSearch = false;
       }
     }
+  }
+
+  selectToday() {
+    return {year: new Date().getFullYear(), month: new Date().getMonth(), day: new Date().getDay()};
   }
 
   searchFullText(text, page) {
@@ -126,8 +142,6 @@ export class DashDefaultComponent implements OnInit {
   }
 
   advancedSearch(form: NgForm) {
-    this.SpinnerService.show();
-    this.currentPage = 1;
     const queryobj = {
       alw: this.rmStopWord(form.value.alw),
       ap: this.checkIfExist(form.value.ap),
@@ -139,20 +153,24 @@ export class DashDefaultComponent implements OnInit {
       waf: this.checkIfExist(form.value.waf),
       wtw: this.rmStopWord(form.value.wtw),
     };
-    this.lastTypeSearch = 'as';
-    this.flagSearch = true;
-    this.catalog.searchAdvanced(queryobj, this.itemsPerPage, this.currentPage).then(response => {
-      this.SpinnerService.hide();
-      this.lastAdvancedSearch = queryobj;
-      this.flagError = false;
-      this.docsList = response.hits.hits;
-      this.total = response.hits.total.value;
-    }, error => {
-      console.error(error);
-      this.SpinnerService.hide();
-    }).then(() => {
-      console.log('Show Docs Completed!');
-    });
+    if (queryobj.alw || queryobj.ap || queryobj.aw || queryobj.dp1 || queryobj.dp2 || queryobj.rap || queryobj.raw || queryobj.wtw) {
+      this.SpinnerService.show();
+      this.currentPage = 1;
+      this.lastTypeSearch = 'as';
+      this.flagSearch = true;
+      this.catalog.searchAdvanced(queryobj, this.itemsPerPage, this.currentPage).then(response => {
+        this.SpinnerService.hide();
+        this.lastAdvancedSearch = queryobj;
+        this.flagError = false;
+        this.docsList = response.hits.hits;
+        this.total = response.hits.total.value;
+      }, error => {
+        console.error(error);
+        this.SpinnerService.hide();
+      }).then(() => {
+        console.log('Show Docs Completed!');
+      });
+    }
     this.modalService.dismissAll();
   }
 
@@ -192,20 +210,19 @@ export class DashDefaultComponent implements OnInit {
     if (this.lastTypeSearch === 'as') {
       this.SpinnerService.show();
       const queryobj = {
-        alw: this.rmStopWord(this.lastAdvancedSearch.alw),
-        ap: this.checkIfExist(this.lastAdvancedSearch.ap),
-        aw: this.rmStopWord(this.lastAdvancedSearch.aw),
-        dp1: this.checkIfExistDate(this.lastAdvancedSearch.dp1),
-        dp2: this.checkIfExistDate(this.lastAdvancedSearch.dp2),
-        rap: this.checkIfExist(this.lastAdvancedSearch.rap),
-        raw: this.checkIfExist(this.lastAdvancedSearch.raw),
-        waf: this.checkIfExist(this.lastAdvancedSearch.waf),
-        wtw: this.rmStopWord(this.lastAdvancedSearch.wtw),
+        alw: this.lastAdvancedSearch.alw,
+        ap: this.lastAdvancedSearch.ap,
+        aw: this.lastAdvancedSearch.aw,
+        dp1: this.lastAdvancedSearch.dp1,
+        dp2: this.lastAdvancedSearch.dp2,
+        rap: this.lastAdvancedSearch.rap,
+        raw: this.lastAdvancedSearch.raw,
+        waf: this.lastAdvancedSearch.waf,
+        wtw: this.lastAdvancedSearch.wtw,
       };
       this.flagSearch = true;
       this.catalog.searchAdvanced(queryobj, this.itemsPerPage, (this.currentPage * this.itemsPerPage) - this.itemsPerPage + 1).then(response => {
         this.SpinnerService.hide();
-        this.lastAdvancedSearch = queryobj;
         this.flagError = false;
         this.docsList = response.hits.hits;
         this.total = response.hits.total.value;
@@ -254,7 +271,7 @@ export class DashDefaultComponent implements OnInit {
 
   checkIfExistDate(date) {
     if (date) {
-      return date;
+      return date.year;
     }
     return null;
   }
@@ -264,6 +281,22 @@ export class DashDefaultComponent implements OnInit {
       return 'Not Present.';
     }
     return value;
+  }
+
+  clearFilter() {
+    this.lastAdvancedSearch = {
+      alw: '',
+      ap: '',
+      aw: '',
+      dp1: null,
+      dp2: null,
+      rap: '',
+      raw: '',
+      waf: '',
+      wtw: '',
+    };
+    this.model1 = null;
+    this.model2 = null;
   }
 
   openTree(content, id, title) {

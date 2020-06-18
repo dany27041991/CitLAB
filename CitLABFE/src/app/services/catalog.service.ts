@@ -87,16 +87,12 @@ export class CatalogService {
   }
 
   searchAdvanced(obj, size, page): any {
-    console.log(obj);
     const queryadvanced = this.buildAdvancedQuery(obj, size, page);
-    console.log(queryadvanced);
-    if (obj.alw || obj.ap || obj.aw || obj.dp1 || obj.dp2 || obj.rap || obj.raw || obj.wtw) {
-      return this.client.search({
-        index: 'paper',
-        body: queryadvanced,
-        //filterPath: ['hits.hits._source']
-      });
-    }
+    return this.client.search({
+      index: 'paper',
+      body: queryadvanced,
+      //filterPath: ['hits.hits._source']
+    });
   }
 
   buildAdvancedQuery(obj, size, page) {
@@ -106,10 +102,8 @@ export class CatalogService {
         existKey.push(key);
       }
     });
-    console.log(existKey);
     let queryadvanced = null;
     if (!obj.waf) {
-      console.log("ALL");
       queryadvanced = {
         'size': size,
         'from': page - 1,
