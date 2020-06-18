@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
 import {Observable} from 'rxjs';
 import {AuthService} from '../../../services/auth.service';
 import {CatalogService} from '../../../services/catalog.service';
@@ -7,6 +7,7 @@ import {PaperInterfacePagination} from '../../../interfaces/PaperInterfacePagina
 import {NgxSpinnerService} from 'ngx-spinner';
 import {NgbModal, ModalDismissReasons, NgbDateStruct, NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
 import {NgForm} from '@angular/forms';
+import * as sw from 'stopword';
 
 @Component({
   selector: 'app-dash-default',
@@ -28,6 +29,9 @@ export class DashDefaultComponent implements OnInit {
   public textsearch = '';
   public flagButtonAdvancedSearch = true;
   public errorMessage = '';
+  public lastTypeSearch = null;
+  public lastTextSearch = null;
+  public lastAdvancedSearch = null;
 
 
   data = {
@@ -38,21 +42,36 @@ export class DashDefaultComponent implements OnInit {
     }
   };
 
+  isConnected = false;
+  status: string;
+
   constructor(private auth: AuthService, private catalog: CatalogService, private SpinnerService: NgxSpinnerService,
-              private modalService: NgbModal, private calendar: NgbCalendar) {}
+              private modalService: NgbModal, private calendar: NgbCalendar, private cd: ChangeDetectorRef) {this.isConnected = false;
+  }
 
   ngOnInit() {
+    /*this.catalog.isAvailable().then(() => {
+      this.status = 'OK';
+      this.isConnected = true;
+    }, error => {
+      this.status = 'ERROR';
+      this.isConnected = false;
+      console.error('Server is down', error);
+    }).then(() => {
+      this.cd.detectChanges();
+    });*/
   }
 
   changeText(event: any) {
     this.textsearch = event.target.value;
+    this.currentPage = null;
   }
 
   compareDate(start, end) {
     this.flagButtonAdvancedSearch = true;
     if (start && end) {
       const startDate = new Date(start.year, start.month, start.day);
-      const endDate = new Date(end.year, end.month, end.day)
+      const endDate = new Date(end.year, end.month, end.day);
       if (startDate > endDate) {
         this.errorMessage = 'The start date cannot be greater than the end date.';
         this.flagButtonAdvancedSearch = false;
@@ -60,15 +79,147 @@ export class DashDefaultComponent implements OnInit {
     }
   }
 
-  searchPub(text, page) {
-    this.SpinnerService.show();
-    text = 'ds'
+  searchFullText(text, page) {
     if (text) {
       if (!page) {
         page = 1;
       }
+      this.lastTextSearch = text;
+      this.lastTypeSearch = 'ft';
+      this.SpinnerService.show();
       this.flagSearch = true;
-      this.catalog.searchPub('s', page).subscribe(
+      this.catalog.searchFullText(text, this.itemsPerPage, page).then(response => {
+        this.SpinnerService.hide();
+        this.flagError = false;
+        this.docsList = response.hits.hits;
+        this.total = response.hits.total.value;
+      }, error => {
+        console.error(error);
+        this.SpinnerService.hide();
+      }).then(() => {
+        console.log('Show Docs Completed!');
+      });
+    }
+  }
+
+  searchForKeywords(text, page) {
+    if (text) {
+      if (!page) {
+        page = 1;
+      }
+      this.lastTextSearch = text;
+      this.lastTypeSearch = 'ok';
+      this.SpinnerService.show();
+      this.flagSearch = true;
+      this.catalog.searchForKeywords(this.rmStopWord(text), this.itemsPerPage, page).then(response => {
+        this.SpinnerService.hide();
+        this.flagError = false;
+        this.docsList = response.hits.hits;
+        this.total = response.hits.total.value;
+      }, error => {
+        console.error(error);
+        this.SpinnerService.hide();
+      }).then(() => {
+        console.log('Show Docs Completed!');
+      });
+    }
+  }
+
+  advancedSearch(form: NgForm) {
+    this.SpinnerService.show();
+    this.currentPage = 1;
+    const queryobj = {
+      alw: this.rmStopWord(form.value.alw),
+      ap: this.checkIfExist(form.value.ap),
+      aw: this.rmStopWord(form.value.aw),
+      dp1: this.checkIfExistDate(form.value.dp1),
+      dp2: this.checkIfExistDate(form.value.dp2),
+      rap: this.checkIfExist(form.value.rap),
+      raw: this.checkIfExist(form.value.raw),
+      waf: this.checkIfExist(form.value.waf),
+      wtw: this.rmStopWord(form.value.wtw),
+    };
+    this.lastTypeSearch = 'as';
+    this.flagSearch = true;
+    this.catalog.searchAdvanced(queryobj, this.itemsPerPage, this.currentPage).then(response => {
+      this.SpinnerService.hide();
+      this.lastAdvancedSearch = queryobj;
+      this.flagError = false;
+      this.docsList = response.hits.hits;
+      this.total = response.hits.total.value;
+    }, error => {
+      console.error(error);
+      this.SpinnerService.hide();
+    }).then(() => {
+      console.log('Show Docs Completed!');
+    });
+    this.modalService.dismissAll();
+  }
+
+  paginationSearch(page) {
+    if (this.lastTypeSearch === 'ft') {
+      this.SpinnerService.show();
+      this.flagSearch = true;
+      this.catalog.searchFullText(this.lastTextSearch, this.itemsPerPage, (page * this.itemsPerPage) - this.itemsPerPage + 1)
+        .then(response => {
+          this.SpinnerService.hide();
+          this.flagError = false;
+          this.docsList = response.hits.hits;
+          this.total = response.hits.total.value;
+        }, error => {
+          console.error(error);
+          this.SpinnerService.hide();
+        }).then(() => {
+        console.log('Show Docs Completed!');
+      });
+    }
+    if (this.lastTypeSearch === 'ok') {
+      this.SpinnerService.show();
+      this.flagSearch = true;
+      this.catalog.searchForKeywords(this.rmStopWord(this.lastTextSearch), this.itemsPerPage, (page * this.itemsPerPage) - this.itemsPerPage)
+        .then(response => {
+          this.SpinnerService.hide();
+          this.flagError = false;
+          this.docsList = response.hits.hits;
+          this.total = response.hits.total.value;
+        }, error => {
+          console.error(error);
+          this.SpinnerService.hide();
+        }).then(() => {
+        console.log('Show Docs Completed!');
+      });
+    }
+    if (this.lastTypeSearch === 'as') {
+      this.SpinnerService.show();
+      const queryobj = {
+        alw: this.rmStopWord(this.lastAdvancedSearch.alw),
+        ap: this.checkIfExist(this.lastAdvancedSearch.ap),
+        aw: this.rmStopWord(this.lastAdvancedSearch.aw),
+        dp1: this.checkIfExistDate(this.lastAdvancedSearch.dp1),
+        dp2: this.checkIfExistDate(this.lastAdvancedSearch.dp2),
+        rap: this.checkIfExist(this.lastAdvancedSearch.rap),
+        raw: this.checkIfExist(this.lastAdvancedSearch.raw),
+        waf: this.checkIfExist(this.lastAdvancedSearch.waf),
+        wtw: this.rmStopWord(this.lastAdvancedSearch.wtw),
+      };
+      this.flagSearch = true;
+      this.catalog.searchAdvanced(queryobj, this.itemsPerPage, (this.currentPage * this.itemsPerPage) - this.itemsPerPage + 1).then(response => {
+        this.SpinnerService.hide();
+        this.lastAdvancedSearch = queryobj;
+        this.flagError = false;
+        this.docsList = response.hits.hits;
+        this.total = response.hits.total.value;
+      }, error => {
+        console.error(error);
+        this.SpinnerService.hide();
+      }).then(() => {
+        console.log('Show Docs Completed!');
+      });
+    }
+  }
+
+  /*searchPub(text, page, type) {
+      this.catalog.searchPub(obj, page).subscribe(
         (data) => {
           this.SpinnerService.hide();
           this.flagError = false;
@@ -83,6 +234,29 @@ export class DashDefaultComponent implements OnInit {
         }
       );
     }
+  }*/
+
+  rmStopWord(text) {
+    if (text) {
+      let keywords = sw.removeStopwords(this.splitMulti(text, [' ', ',', ';', '|']));
+      keywords = sw.removeStopwords(keywords, sw.it);
+      return keywords.join(' ');
+    }
+    return '';
+  }
+
+  checkIfExist(value) {
+    if (value) {
+      return value;
+    }
+    return '';
+  }
+
+  checkIfExistDate(date) {
+    if (date) {
+      return date;
+    }
+    return null;
   }
 
   checkValue(value) {
@@ -116,10 +290,6 @@ export class DashDefaultComponent implements OnInit {
     });
   }
 
-  advancedSearch(form: NgForm) {
-
-  }
-
   openAdvancedSearch(content) {
     this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', size: 'lg'}).result.then((result) => {
         this.closeResult = `Closed with: ${result}`;
@@ -136,5 +306,17 @@ export class DashDefaultComponent implements OnInit {
     } else {
       return `with: ${reason}`;
     }
+  }
+
+  splitMulti(str, tokens) {
+    if (str) {
+      const tempChar = tokens[0]; // We can use the first token as a temporary join character
+      for (let i = 1; i < tokens.length; i++) {
+        str = str.split(tokens[i]).join(tempChar);
+      }
+      str = str.split(tempChar);
+      return str.filter(item => item);
+    }
+    return str;
   }
 }

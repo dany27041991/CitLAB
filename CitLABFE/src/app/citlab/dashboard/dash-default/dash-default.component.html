@@ -4,12 +4,12 @@
       <div class="card-header">
         <h4>Do your research</h4>
         <div class="input-group">
-          <input type="text" class="form-control" aria-label="Text input with segmented dropdown button" #searchText (keyup)="changeText($event)">
+          <input type="text" class="form-control" aria-label="Text input with segmented dropdown button" name="searchText" #searchText (keyup)="changeText($event)" #textsearchbasic>
           <div class="input-group-prepend" ngbDropdown [placement]="'bottom-left'">
               <button class="btn btn-primary" ngbDropdownToggle type="button">Search by</button>
               <div ngbDropdownMenu>
-                <a class="dropdown-item" href="javascript:" (click)="searchPub(null, null)">Full Text</a>
-                <a class="dropdown-item" href="javascript:" (click)="searchPub(null, null)">Keywords</a>
+                <a class="dropdown-item" href="javascript:" (click)="searchFullText(textsearchbasic.value, null)">Full Text</a>
+                <a class="dropdown-item" href="javascript:" (click)="searchForKeywords(textsearchbasic.value, null)">Keywords</a>
                 <div role="separator" class="dropdown-divider"></div>
                 <a class="dropdown-item" href="javascript:" (click)="openAdvancedSearch(advancedsearchcontent)">Advanced Search</a>
               </div>
@@ -24,36 +24,36 @@
         </div>
         <ng-template #donesearch>
           <div *ngIf="!flagError; else errorsearch">
-            <div *ngIf="docsList; else nodocfound">
+            <div *ngIf="docsList && docsList.length > 0; else nodocfound">
                 <div class="row pl-2 pr-2" *ngFor="let doc of docsList | paginate: { itemsPerPage: itemsPerPage, currentPage: currentPage,
                   totalItems: total, id: 'first' }">
                   <div class="col-12">
                     <div class="card border-primary">
                       <div class="card-header" style="color: white; background-color: #FAFCFF">
-                        <h5>{{checkValue(doc['type_paper'])}} - {{checkValue(doc['title'])}}</h5>
+                        <h5>{{checkValue(doc._source['type_paper'])}} - {{checkValue(doc._source['title'].toUpperCase())}}</h5>
                       </div>
                       <div class="card-body" id="module">
                         <blockquote class="blockquote mb-2">
                           <details>
-                            <summary style="font-size: medium"><b>Astract - </b>{{checkValue(doc['abstract']).substring(0, [360])}}</summary>
-                            <div style="font-size: 18px; margin-left: 20px; margin-top: 10px;"><p>{{checkValue(doc['abstract'])}}</p></div>
+                            <summary style="font-size: medium"><b>Astract - </b>{{checkValue(doc._source['abstract']).substring(0, [360])}}</summary>
+                            <div style="font-size: 18px; margin-left: 20px; margin-top: 10px;"><p>{{checkValue(doc._source['abstract'])}}</p></div>
                           </details>
-                          <footer class="blockquote-footer" style="font-size: 14px;"><b>Written by: </b>{{checkValue(doc['writers'])}}.
-                            <div style="float: right"><div *ngIf="doc['created_on']; else alternativeyear"><b>Created on: </b>{{checkValue(doc['created_on'])}}</div>
-                            <ng-template #alternativeyear><b>Created on: </b>{{checkValue(doc['year'])}}</ng-template></div>
+                          <footer class="blockquote-footer" style="font-size: 14px;"><b>Written by: </b>{{checkValue(doc._source['writers'])}}.
+                            <div style="float: right"><div *ngIf="doc._source['created_on']; else alternativeyear"><b>Created on: </b>{{checkValue(doc._source['created_on'])}}</div>
+                            <ng-template #alternativeyear><b>Created on: </b>{{checkValue(doc._source['year'])}}</ng-template></div>
                           </footer>
                           <cite title="Source Title"></cite>
                         </blockquote>
-                        <a class="card-link card-link-doc">Quoted from {{doc['mentioned_in'].length}}</a>
-                        <a class="card-link card-link-doc">All {{doc['n_version']}} versions</a>
-                        <a class="card-link card-link-doc" (click)="openTree(treecontent, doc['id'], checkValue(doc['title']))">Tree diagram for quotes</a>
+                        <a class="card-link card-link-doc">Quoted from {{doc._source['mentioned_in'].length}}</a>
+                        <!--<a class="card-link card-link-doc">All {{doc._source['n_version']}} versions</a>-->
+                        <a class="card-link card-link-doc" (click)="openTree(treecontent, doc['_id'], checkValue(doc._source['title']))">Tree diagram for quotes</a>
                       </div>
                     </div>
                   </div>
                 </div>
-              <div class="row">
+              <div class="row" *ngIf="total!=0">
                 <div class="col-12 text-center">
-                  <pagination-controls (pageChange)="currentPage = $event" id="first" (click)="searchPub(null, currentPage)"></pagination-controls>
+                  <pagination-controls (pageChange)="currentPage = $event" id="first" (click)="paginationSearch(currentPage)"></pagination-controls>
                 </div>
               </div>
             </div>
@@ -100,42 +100,42 @@
   </div>
   <div class="modal-body pl-5 pr-5">
     <!-- Form -->
-    <form #advancedsearch="ngForm" (ngSubmit)="advancedSearch(advancedsearch)">
+    <form #advancedsearchform="ngForm" id="ngForm" (ngSubmit)="advancedSearch(advancedsearchform)">
       <div class="form-group row">
         <label for="allWord" class="col-sm-4 col-form-label label-cls">with <b>all</b> the words</label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="allWord" placeholder="" [value]="textsearch">
+          <input type="text" class="form-control" id="allWord" placeholder="" ngModel name="aw" [(ngModel)]="textsearch">
         </div>
       </div>
 
       <div class="form-group row">
         <label for="allPhrase" class="col-sm-4 col-form-label label-cls">with <b>the exact phrase</b></label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="allPhrase" placeholder="">
+          <input type="text" class="form-control" id="allPhrase" placeholder="" ngModel name="ap">
         </div>
       </div>
 
       <div class="form-group row">
         <label for="atLeastOne" class="col-sm-4 col-form-label label-cls">with <b>at least one</b> of the words</label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="atLeastOne" placeholder="">
+          <input type="text" class="form-control" id="atLeastOne" placeholder="" ngModel name="alw">
         </div>
       </div>
 
       <div class="form-group row">
         <label for="withoutWords" class="col-sm-4 col-form-label label-cls"><b>without the words</b></label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="withoutWords" placeholder="">
+          <input type="text" class="form-control" id="withoutWords" placeholder="" ngModel name="wtw">
         </div>
       </div>
 
       <div class="form-group row">
         <label for="location" class="col-sm-4 col-form-label label-cls">where the words are found</label>
         <div class="col-sm-8">
-          <select class="browser-default custom-select mb-4" id="location">
+          <select class="browser-default custom-select mb-4" id="location" ngModel name="waf">
             <option value="" selected>Choose option</option>
-            <option value="1">anywhere in the article</option>
-            <option value="2">in the title of the article</option>
+            <option value="1" [ngValue]="1">anywhere in the article</option>
+            <option value="2" [ngValue]="2">in the title of the article</option>
           </select>
         </div>
       </div>
@@ -143,14 +143,14 @@
       <div class="form-group row">
         <label for="authors" class="col-sm-4 col-form-label label-cls">Return articles <b>written</b> by</label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="authors" placeholder="">
+          <input type="text" class="form-control" id="authors" placeholder="" ngModel name="raw">
         </div>
       </div>
 
       <div class="form-group row">
         <label for="company" class="col-sm-4 col-form-label label-cls">Return articles <b>published</b> by</label>
         <div class="col-sm-8">
-          <input type="text" class="form-control" id="company" placeholder="">
+          <input type="text" class="form-control" id="company" placeholder="" ngModel name="rap">
         </div>
       </div>
 
@@ -176,7 +176,7 @@
     </div>
   </div>
   <div class="modal-footer p-2">
-    <button type="button" class="btn btn-primary" (click)="advancedSearch(advancedsearch)" [disabled]="!flagButtonAdvancedSearch">Search</button>
+    <button type="button" type="submit" class="btn btn-primary" form="ngForm" [disabled]="!flagButtonAdvancedSearch">Search</button>
   </div>
 </ng-template>
 
