@@ -11,7 +11,7 @@ export class AuthService {
 
   constructor(private http: HttpClient, private cookieService: CookieService, public router: Router) {}
 
-  ngOnInit(){}
+  ngOnInit() {}
 
   setLogged(token) {
     this.cookieService.set('auth-token', token, 3600);
@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   logout() {
-    this.cookieService.delete('auth-token');
+    this.cookieService.set('auth-token', '', -1);
   }
 
   getToken(): string {
