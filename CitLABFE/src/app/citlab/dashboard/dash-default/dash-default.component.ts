@@ -1,4 +1,4 @@
-import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {ChangeDetectorRef, Component, OnInit, ViewEncapsulation} from '@angular/core';
 import {Observable} from 'rxjs';
 import {AuthService} from '../../../services/auth.service';
 import {CatalogService} from '../../../services/catalog.service';
@@ -12,6 +12,7 @@ import * as sw from 'stopword';
 @Component({
   selector: 'app-dash-default',
   templateUrl: './dash-default.component.html',
+  encapsulation: ViewEncapsulation.None,
   styleUrls: ['./dash-default.component.scss']
 })
 export class DashDefaultComponent implements OnInit {
@@ -306,7 +307,7 @@ export class DashDefaultComponent implements OnInit {
       this.flagTree = false;
       this.SpinnerService.hide();
       this.data.json = data;
-      this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', size: 'lg'}).result.then((result) => {
+      this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
         this.closeResult = `Closed with: ${result}`;
       }, (reason) => {
         this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
@@ -315,7 +316,7 @@ export class DashDefaultComponent implements OnInit {
       this.SpinnerService.hide();
       this.errorMessage = 'A problem has occurred. Try again. If the problem persists, contact the administration.';
       this.flagTree = true;
-      this.modalService.open(content, {ariaLabelledBy: 'modal-basic-title', size: 'lg'}).result.then((result) => {
+      this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
         this.closeResult = `Closed with: ${result}`;
       }, (reason) => {
         this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
