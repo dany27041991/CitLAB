@@ -1,15 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
-from refextract import extract_references_from_file, extract_references_from_url
 import re
-import os.path
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import time
-import json
+import textract
 driver = webdriver.PhantomJS(executable_path="/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/phantomjs/bin/phantomjs")
 
 base = "https://www.ncbi.nlm.nih.gov"
@@ -18,9 +12,6 @@ base_url = "https://www.ncbi.nlm.nih.gov/pmc/?term="
 
 def clear_text(text):
     return text.replace("\"", "'").replace("<b>", "").replace("</b>", "").replace("<span>", "").replace("</span>", "").replace("<sup>", "").replace("</sup>", "").replace("<em>", "").replace("</em>", "").rstrip()
-
-def extract_pdf_author_from_pdf(url):
-    references = extract_references_from_file("/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/PDF/prova.pdf")
 
 def extract_title(doc_page, obj, cit=True):
     title = doc_page.find("div", class_="title").find("a").text
@@ -33,17 +24,20 @@ def extract_pdf(doc_page, obj):
     for link_pdf in a_links_pdf:
         if "PDF" in link_pdf.text:
             obj["pdf"] = base + link_pdf['href']
-
-            if os.path.exists('mydirectory') is False:
+            try:
+                f = open("./PDF/"+link_pdf['href'].split("/")[-1:][0])
+                f.close()
+            except IOError:
                 options = webdriver.ChromeOptions()
 
                 profile = {
-                           "download.default_directory": "/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/PDF",
-                           "plugins.always_open_pdf_externally": True
+                    "download.default_directory": "/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/PDF",
+                    "plugins.always_open_pdf_externally": True
                 }
                 options.add_experimental_option("prefs", profile)
-                driver_pdf = webdriver.Chrome('/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/chrome_driver/chromedriver',
-                                          chrome_options=options)  # Optional argument, if not specified will search path.
+                driver_pdf = webdriver.Chrome(
+                    '/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/chrome_driver/chromedriver',
+                    chrome_options=options)  # Optional argument, if not specified will search path.
 
                 driver_pdf.implicitly_wait(10)
                 driver_pdf.maximize_window()
@@ -56,6 +50,7 @@ def extract_pdf(doc_page, obj):
 
 def extract_references(doc_page,obj):
     array_references = []
+    array_original_references = []
     try:
         if doc_page.find("div", id="reference-list").find_all("div", class_="ref-cit-blk half_rhythm"):
             if doc_page.find("div", id="reference-list").find_all("div", class_="ref-cit-blk half_rhythm")[0].find_all("span",class_="element-citation"):
@@ -65,6 +60,7 @@ def extract_references(doc_page,obj):
                         "authors": None,
                         "title": None
                     }
+                    ref_original = re.sub(' +', ' ',ref.text.replace("\n", " ").replace("\"", "'").replace("[PMC free article]", "").replace("[PubMed]", "").replace("[CrossRef]","").replace("[Google Scholar]", ""))
                     ref_array = re.sub(' +', ' ',ref.text.replace("\n", " ").replace(".,",",").replace("\"", "'").replace("[PMC free article]", "").replace("[PubMed]", "").replace("[CrossRef]","").replace("[Google Scholar]", "")).split(".")
                     ref_array = [x.strip(' ') for x in ref_array]
                     ref_array = list(filter(None, ref_array))
@@ -91,6 +87,7 @@ def extract_references(doc_page,obj):
                         ref_obj["title"] = ref_obj["authors"]
                         ref_obj["authors"] = None
                     array_references.append(ref_obj)
+                    array_original_references.append(ref_original)
 
         if doc_page.find("div", id="reference-list").find_all("div", class_="ref-cit-blk half_rhythm"):
             if doc_page.find("div", id="reference-list").find_all("div", class_="ref-cit-blk half_rhythm")[0].find_all("span",class_="mixed-citation"):
@@ -100,6 +97,7 @@ def extract_references(doc_page,obj):
                         "authors": None,
                         "title": None
                     }
+                    ref_original = re.sub(' +', ' ',ref.text.replace("\n", " ").replace("\"", "'").replace("[PMC free article]", "").replace("[PubMed]", "").replace("[CrossRef]","").replace("[Google Scholar]", ""))
                     ref_array = re.sub(' +', ' ',ref.find("span", class_="mixed-citation").text.replace("\n", " ").replace(".,",",").replace("\"", "'").replace(" . ","").replace("[PMC free article]", "").replace("[PubMed]", "").replace("[CrossRef]","").replace("[Google Scholar]", "")).split(".")
                     ref_array = [x.strip(' ') for x in ref_array]
                     ref_array = list(filter(None, ref_array))
@@ -126,6 +124,7 @@ def extract_references(doc_page,obj):
                         ref_obj["title"] = ref_obj["authors"]
                         ref_obj["authors"] = None
                     array_references.append(ref_obj)
+                    array_original_references.append(ref_original)
 
         if doc_page.find("div", id="reference-list").find_all("li"):
             references_div = doc_page.find_all("span", class_="element-citation")
@@ -134,6 +133,7 @@ def extract_references(doc_page,obj):
                     "authors": None,
                     "title": None
                 }
+                ref_original = re.sub(' +', ' ',ref.text.replace("\n", " ").replace("\"", "'").replace("[PMC free article]","").replace("[PubMed]","").replace("[CrossRef]", "").replace("[Google Scholar]", ""))
                 ref_array = re.sub(' +', ' ',ref.text.replace("\n", " ").replace(".,",",").replace("\"", "'").replace(" . ", "").replace("[PMC free article]","").replace("[PubMed]","").replace("[CrossRef]", "").replace("[Google Scholar]", "")).split(".")
                 index = None
                 for i, element in enumerate(ref_array, start=0):
@@ -159,10 +159,11 @@ def extract_references(doc_page,obj):
                     ref_obj["authors"] = None
 
                 array_references.append(ref_obj)
+                array_original_references.append(ref_original)
     except Exception as e:
         #print("Errore {}".format(obj['title']))
         pass
-    return array_references
+    return array_references, array_original_references
 
 
 def extract_abstract(obj):
@@ -182,7 +183,7 @@ def extract_abstract(obj):
     except Exception as e:
         #print("Errore {}".format(obj['title']))
         pass
-    obj["references"] = extract_references(soup_doc,obj)
+    obj["references"], obj["original_references"] = extract_references(soup_doc,obj)
     return obj
 
 def extract_authors(doc_page, obj):
@@ -265,12 +266,15 @@ def mentioned_in(obj):
                     "publication_date": None,
                     "doi": None,
                     "pdf": None,
+                    "pdf_text": None,
                     "mentioned_by": [],
-                    "references": []
+                    "references": [],
+                    "original_references": []
                 }
                 obj_cit = extract_title(row, obj_cit)
                 obj_cit = extract_pdf(row, obj_cit)
                 obj_cit = extract_authors(row, obj_cit)
+                obj_cit = extract_text_from_pdf(obj_cit)
                 array_citation.append(obj_cit)
                 if count > 5:
                     break
@@ -278,6 +282,14 @@ def mentioned_in(obj):
             if count > 5:
                 break
     obj["mentioned_by"] = array_citation
+    return obj
+
+def extract_text_from_pdf(obj):
+    try:
+        text = textract.process("./PDF/"+obj['pdf'].split("/")[-1:][0]).decode("utf-8")
+        obj["pdf_text"] = text.replace("\"","'").replace("{","[").replace("}","]")
+    except Exception as e:
+        pass
     return obj
 
 html_content = requests.get(base_url+"clinical+data").text
@@ -288,22 +300,25 @@ link_array = []
 divs = soup.find_all("div", class_="rslt")
 for row in divs:
     obj = {
-            "title": None,
-            "abstract": None,
-            "url": base + row.find("a").get("href"),
-            "authors": None,
-            "year": None,
-            "publishing_company": None,
-            "publication_date": None,
-            "doi": None,
-            "pdf": None,
-            "mentioned_by": [],
-            "references": []
+        "title": None,
+        "abstract": None,
+        "url": base + row.find("a").get("href"),
+        "authors": None,
+        "year": None,
+        "publishing_company": None,
+        "publication_date": None,
+        "doi": None,
+        "pdf": None,
+        "pdf_text": None,
+        "mentioned_by": [],
+        "references": [],
+        "original_references": []
     }
 
     obj = extract_title(row, obj)
     obj = extract_pdf(row, obj)
     obj = extract_authors(row, obj)
     obj = mentioned_in(obj)
+    obj = extract_text_from_pdf(obj)
     link_array.append(obj)
-    #print(obj)
+    print(obj)
