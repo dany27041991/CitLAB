@@ -2,7 +2,14 @@ from bs4 import BeautifulSoup
 import requests
 from refextract import extract_references_from_file, extract_references_from_url
 import re
+import os.path
 from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time
+import json
 driver = webdriver.PhantomJS(executable_path="/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/phantomjs/bin/phantomjs")
 
 base = "https://www.ncbi.nlm.nih.gov"
@@ -26,6 +33,23 @@ def extract_pdf(doc_page, obj):
     for link_pdf in a_links_pdf:
         if "PDF" in link_pdf.text:
             obj["pdf"] = base + link_pdf['href']
+
+            if os.path.exists('mydirectory') is False:
+                options = webdriver.ChromeOptions()
+
+                profile = {
+                           "download.default_directory": "/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/PDF",
+                           "plugins.always_open_pdf_externally": True
+                }
+                options.add_experimental_option("prefs", profile)
+                driver_pdf = webdriver.Chrome('/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/chrome_driver/chromedriver',
+                                          chrome_options=options)  # Optional argument, if not specified will search path.
+
+                driver_pdf.implicitly_wait(10)
+                driver_pdf.maximize_window()
+                driver_pdf.get(obj["pdf"])
+                time.sleep(5)
+                driver_pdf.quit()
             break
             #extract_pdf_author_from_pdf(obj["pdf"])
     return obj
@@ -135,9 +159,9 @@ def extract_references(doc_page,obj):
                     ref_obj["authors"] = None
 
                 array_references.append(ref_obj)
-    except:
+    except Exception as e:
         #print("Errore {}".format(obj['title']))
-        print("\n")
+        pass
     return array_references
 
 
@@ -155,9 +179,9 @@ def extract_abstract(obj):
                 if j == 0:
                     obj["abstract"] = clear_text(p.text)
                     break
-    except:
+    except Exception as e:
         #print("Errore {}".format(obj['title']))
-        print("\n")
+        pass
     obj["references"] = extract_references(soup_doc,obj)
     return obj
 
@@ -282,4 +306,4 @@ for row in divs:
     obj = extract_authors(row, obj)
     obj = mentioned_in(obj)
     link_array.append(obj)
-    print(obj)
+    #print(obj)
