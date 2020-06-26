@@ -12,6 +12,14 @@ import math
 # Create your views here.
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def ncbi_scraping(request, *args, **kwargs):
+    if request.GET.get('q', None) and request.GET.get('page', None):
+        return Response(data='Successfully!', status=status.HTTP_200_OK)
+    else:
+        return Response(data="A problem occurred!", status=status.HTTP_401_UNAUTHORIZED)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def catalog_search(request, *args, **kwargs):
     max_for_page = 5
     if request.GET.get('q', None) and request.GET.get('page', None):
