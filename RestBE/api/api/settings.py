@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'authapp',
     'paper_api',
+    'common.ncbi',
     'category_api',
     'djoser',
     'corsheaders',

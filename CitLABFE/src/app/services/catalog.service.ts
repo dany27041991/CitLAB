@@ -43,6 +43,11 @@ export class CatalogService {
   }
 
   searchFullText(fulltext, size, page): any {
+    this.launchNCBI(fulltext).subscribe(resp => {
+      console.log(resp);
+    }, err => {
+      console.log(err);
+    });
     const queryfulltext = {
       'from': page - 1,
       'size': size,
@@ -65,6 +70,11 @@ export class CatalogService {
   }
 
   searchForKeywords(fulltext, size, page): any {
+    this.launchNCBI(fulltext).subscribe(resp => {
+      console.log(resp);
+    }, err => {
+      console.log(err);
+    });
     const querykeywords = {
       'from': page - 1,
       'size': size,
@@ -87,6 +97,20 @@ export class CatalogService {
   }
 
   searchAdvanced(obj, size, page): any {
+    if (obj.aw) {
+      this.launchNCBI(obj.aw).subscribe(resp => {
+        console.log(resp);
+      }, err => {
+        console.log(err);
+      });
+    }
+    if (obj.ap) {
+      this.launchNCBI(obj.ap).subscribe(resp => {
+        console.log(resp);
+      }, err => {
+        console.log(err);
+      });
+    }
     const queryadvanced = this.buildAdvancedQuery(obj, size, page);
     return this.client.search({
       index: 'paper',
@@ -398,6 +422,16 @@ export class CatalogService {
       });
     }
     return queryadvanced;
+  }
+
+  launchNCBI(query): Observable<PaperInterfacePagination> {
+    console.log(query);
+    const headers = {
+      'Authorization': String('Token ' + this.auth.getToken()),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    }
+    return this.http.get(environment.url + 'catalog/ncbi/?q=' + query,
+      { headers: new HttpHeaders(headers) }) as Observable<PaperInterfacePagination>;
   }
 
   searchPub(query, page): Observable<PaperInterfacePagination> {

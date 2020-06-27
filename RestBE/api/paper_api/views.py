@@ -6,14 +6,85 @@ from rest_framework.response import Response
 from rest_framework.parsers import JSONParser
 from .serializers import PaperSerializer
 from .models import Paper
-
 import math
+from bs4 import BeautifulSoup
+import requests
+import re
+from selenium import webdriver
+import time
+import textract
+from common.ncbi.ncbi_scraping import extract_title
+from common.ncbi.ncbi_scraping import extract_pdf
+from common.ncbi.ncbi_scraping import extract_authors
+from common.ncbi.ncbi_scraping import mentioned_in
+from common.ncbi.ncbi_scraping import extract_text_from_pdf
 
 # Create your views here.
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def ncbi_scraping(request, *args, **kwargs):
-    if request.GET.get('q', None) and request.GET.get('page', None):
+def ncbi_scraping_view(request, *args, **kwargs):
+    if request.GET.get('q', None):
+        query = request.GET.get('q', None).replace(" ","+")
+        PDF_FLAG = True
+        base = "https://www.ncbi.nlm.nih.gov"
+        base_api = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pmc/?format=citation&id="
+        base_url = "https://www.ncbi.nlm.nih.gov/pmc/?term="
+
+        html_content = requests.get(base_url+query).text
+        soup = BeautifulSoup(html_content, "lxml")
+
+        separator = ', '
+        link_array = []
+        divs = soup.find_all("div", class_="rslt")
+        for row in divs:
+            obj = {
+                "title": None,
+                "abstract": None,
+                "url": base + row.find("a").get("href"),
+                "authors": None,
+                "year": None,
+                "publishing_company": None,
+                "publication_date": None,
+                "doi": None,
+                "pdf": None,
+                "pdf_text": None,
+                "mentioned_by": [],
+                "references": [],
+                "original_references": []
+            }
+
+            obj = extract_title(row, obj)
+            counter_doc = Paper.objects.filter(title=obj['title']).count()
+            if counter_doc > 0:
+                continue
+            else:
+                if PDF_FLAG:
+                    obj = extract_pdf(row, obj)
+                obj = extract_authors(row, obj)
+                obj = mentioned_in(obj)
+                if PDF_FLAG:
+                    obj = extract_text_from_pdf(obj)
+                link_array.append(obj)
+            break
+        print("\n\n\n\n\n")
+        for doc_obj in link_array:
+            parent_id = None
+            array_citated_by = []
+            doc = MyData.objects.create(title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
+                site=doc_obj['url'],created_on=doc_obj["publication_date"],year=doc_obj['year'],n_citation=len(doc_obj["mentioned_by"]),pdf=doc_obj['pdf'],pdf_text=doc_obj['pdf_text'],
+                references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
+            doc.save()
+            parent_id = doc.id
+            for mention in doc_obj["mentioned_by"]:
+                ment = MyData.objects.create(title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
+                    site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
+                    references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
+                ment.save()
+                array_citated_by.append(ment.id)
+            
+            print(parent_id)
+        print("\n\n\n\n\n")
+
         return Response(data='Successfully!', status=status.HTTP_200_OK)
     else:
         return Response(data="A problem occurred!", status=status.HTTP_401_UNAUTHORIZED)
