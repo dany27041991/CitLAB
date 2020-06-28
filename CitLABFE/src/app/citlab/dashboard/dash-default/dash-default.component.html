@@ -157,13 +157,13 @@
       <div class="form-group row">
         <label class="col-sm-4 col-form-label label-cls">Return items from <b>dates</b> between</label>
         <div class="col-sm-4 form-inline">
-          <input id="datestart" [minDate]="{year: 1800, month: 1, day: 1}" [maxDate]="selectToday()" [startDate]="{year: 1800, month: 1, day: 1}" class="form-control" placeholder="yyyy-mm-dd" name="dp1" [(ngModel)]="model1" ngbDatepicker #d1="ngbDatepicker" (ngModelChange)="compareDate(model1, model2)">&nbsp;
+          <input id="datestart" [startDate]="{year: 2020, month: 1, day: 1}" class="form-control" placeholder="yyyy-mm-dd" name="dp1" [(ngModel)]="model1" ngbDatepicker #d1="ngbDatepicker" (ngModelChange)="compareDate(model1, model2)">&nbsp;
           <label style="cursor: pointer" for="datestart" (click)="d1.toggle();" class="label-cls">
             <img src="../../../../assets/images/icon/calendar.png" class="img-fluid" alt="Responsive image" width="30px">
           </label>
         </div>
         <div class="col-sm-4 form-inline">
-          <input id="dateend" [minDate]="{year: 1800, month: 1, day: 1}" [maxDate]="selectToday()" [startDate]="{year: 1800, month: 1, day: 1}" class="form-control" placeholder="yyyy-mm-dd" name="dp2" [(ngModel)]="model2" ngbDatepicker #d2="ngbDatepicker" (ngModelChange)="compareDate(model1, model2)">&nbsp;
+          <input id="dateend" [startDate]="{year: 2020, month: 1, day: 1}" class="form-control" placeholder="yyyy-mm-dd" name="dp2" [(ngModel)]="model2" ngbDatepicker #d2="ngbDatepicker" (ngModelChange)="compareDate(model1, model2)">&nbsp;
           <label style="cursor: pointer" for="dateend" (click)="d2.toggle()" class="label-cls">
             <img src="../../../../assets/images/icon/calendar.png" class="img-fluid" alt="Responsive image" width="30px">
           </label>

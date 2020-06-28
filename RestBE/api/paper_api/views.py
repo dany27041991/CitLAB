@@ -27,60 +27,62 @@ def ncbi_scraping_view(request, *args, **kwargs):
     if request.GET.get('q', None):
         query = request.GET.get('q', None).replace(" ","+")
         PDF_FLAG = True
-        base = "https://www.ncbi.nlm.nih.gov"
-        base_api = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pmc/?format=citation&id="
-        base_url = "https://www.ncbi.nlm.nih.gov/pmc/?term="
+        SCRAPING_FLAG = False
+        if SCRAPING_FLAG:
+            base = "https://www.ncbi.nlm.nih.gov"
+            base_api = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pmc/?format=citation&id="
+            base_url = "https://www.ncbi.nlm.nih.gov/pmc/?term="
 
-        html_content = requests.get(base_url+query).text
-        soup = BeautifulSoup(html_content, "lxml")
+            html_content = requests.get(base_url+query).text
+            soup = BeautifulSoup(html_content, "lxml")
 
-        separator = ', '
-        link_array = []
-        divs = soup.find_all("div", class_="rslt")
-        for row in divs:
-            obj = {
-                "title": None,
-                "abstract": None,
-                "url": base + row.find("a").get("href"),
-                "authors": None,
-                "year": None,
-                "publishing_company": None,
-                "publication_date": None,
-                "doi": None,
-                "pdf": None,
-                "pdf_text": None,
-                "mentioned_by": [],
-                "references": [],
-                "original_references": []
-            }
+            separator = ', '
+            link_array = []
+            divs = soup.find_all("div", class_="rslt")
+            for row in divs:
+                obj = {
+                    "title": None,
+                    "abstract": None,
+                    "url": base + row.find("a").get("href"),
+                    "authors": None,
+                    "year": None,
+                    "publishing_company": None,
+                    "publication_date": None,
+                    "doi": None,
+                    "pdf": None,
+                    "pdf_text": None,
+                    "mentioned_by": [],
+                    "references": [],
+                    "original_references": []
+                }
 
-            obj = extract_title(row, obj)
-            counter_doc = Paper.objects.filter(title=obj['title']).count()
-            if counter_doc > 0:
-                continue
-            else:
-                if PDF_FLAG:
-                    obj = extract_pdf(row, obj)
-                obj = extract_authors(row, obj)
-                obj = mentioned_in(obj)
-                if PDF_FLAG:
-                    obj = extract_text_from_pdf(obj)
-                link_array.append(obj)
+                obj = extract_title(row, obj)
+                counter_doc = Paper.objects.filter(title=obj['title']).count()
+                if counter_doc > 0:
+                    continue
+                else:
+                    if PDF_FLAG:
+                        obj = extract_pdf(row, obj)
+                    obj = extract_authors(row, obj)
+                    obj = mentioned_in(obj)
+                    if PDF_FLAG:
+                        obj = extract_text_from_pdf(obj)
+                    link_array.append(obj)
 
-        for doc_obj in link_array:
-            doc = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
-                site=doc_obj['url'],created_on=doc_obj["publication_date"],year=doc_obj['year'],n_citation=len(doc_obj["mentioned_by"]),pdf=doc_obj['pdf'],pdf_text=doc_obj['pdf_text'],
-                references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
-            doc.save()
+            for doc_obj in link_array:
+                doc = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
+                    site=doc_obj['url'],created_on=doc_obj["publication_date"],year=doc_obj['year'],n_citation=len(doc_obj["mentioned_by"]),pdf=doc_obj['pdf'],pdf_text=doc_obj['pdf_text'],
+                    references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
+                doc.save()
 
-            for mention in doc_obj["mentioned_by"]:
-                ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
-                    site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
-                    references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
-                ment.save()
-                with connection.cursor() as cursor:
-                    cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[doc.id, ment.id])
-                
+                for mention in doc_obj["mentioned_by"]:
+                    ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
+                        site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
+                        references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
+                    ment.save()
+                    with connection.cursor() as cursor:
+                        cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[doc.id, ment.id])
+                    
 
         return Response(data='Successfully!', status=status.HTTP_200_OK)
     else:

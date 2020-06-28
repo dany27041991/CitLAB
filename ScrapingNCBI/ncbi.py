@@ -384,6 +384,10 @@ else:
                 print("\n")'''
                 array_mentioned_id.append(row_cit[2])
 
+            if row[21]:
+                pdf_text = row[21].replace("\n"," ").replace("\"","").replace("{","(").replace("}",")").replace("[","(").replace("]",")")
+            else:
+                pdf_text = ""
             intestation = {"index": {"_index": "paper", "_id": row[0]}}
             document = {
                 "title": row[1],
@@ -406,7 +410,7 @@ else:
                 "added_on": str(row[18]).split(" ")[0],
                 "writers": row[19],
                 "original_references": row[20],
-                "pdf_text": row[21],
+                "pdf_text": pdf_text,
                 "references": row[22],
                 "mentioned_in": array_mentioned_id
             }

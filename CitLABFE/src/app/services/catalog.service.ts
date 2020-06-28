@@ -202,7 +202,8 @@ export class CatalogService {
             queryadvanced.query.bool.must[0].bool.must.push({
               'match' : {
                 'writers': {
-                  'query' : obj.raw
+                  'query' : obj.raw,
+                  "fuzziness": "AUTO"
                 }
               }
             });
@@ -212,7 +213,8 @@ export class CatalogService {
             queryadvanced.query.bool.must[0].bool.must.push({
               'match' : {
                 'publishing_company': {
-                  'query' : obj.rap
+                  'query' : obj.rap,
+                  "fuzziness": "AUTO"
                 }
               }
             });
@@ -300,7 +302,8 @@ export class CatalogService {
             queryadvanced.query.bool.must[0].bool.must.push({
               'match' : {
                 'writers': {
-                  'query' : obj.raw
+                  'query' : obj.raw,
+                  "fuzziness": "AUTO"
                 }
               }
             });
@@ -310,7 +313,8 @@ export class CatalogService {
             queryadvanced.query.bool.must[0].bool.must.push({
               'match' : {
                 'publishing_company': {
-                  'query' : obj.rap
+                  'query' : obj.rap,
+                  "fuzziness": "AUTO"
                 }
               }
             });
@@ -399,7 +403,8 @@ export class CatalogService {
             queryadvanced.query.bool.must[0].bool.must.push({
               'match' : {
                 'writers': {
-                  'query' : obj.raw
+                  'query' : obj.raw,
+                  "fuzziness": "AUTO"
                 }
               }
             });
@@ -409,7 +414,8 @@ export class CatalogService {
             queryadvanced.query.bool.must[0].bool.must.push({
               'match' : {
                 'publishing_company': {
-                  'query' : obj.rap
+                  'query' : obj.rap,
+                  "fuzziness": "AUTO"
                 }
               }
             });
