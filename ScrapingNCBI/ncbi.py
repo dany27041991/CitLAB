@@ -4,6 +4,11 @@ import re
 from selenium import webdriver
 import time
 import textract
+import psycopg2
+import json
+
+SCRAPING_FLAG = False
+
 driver = webdriver.PhantomJS(executable_path="/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/phantomjs/bin/phantomjs")
 
 base = "https://www.ncbi.nlm.nih.gov"
@@ -292,33 +297,134 @@ def extract_text_from_pdf(obj):
         pass
     return obj
 
-html_content = requests.get(base_url+"clinical+data").text
-soup = BeautifulSoup(html_content, "lxml")
+if SCRAPING_FLAG:
+    html_content = requests.get(base_url+"clinical+data").text
+    soup = BeautifulSoup(html_content, "lxml")
 
-separator = ', '
-link_array = []
-divs = soup.find_all("div", class_="rslt")
-for row in divs:
-    obj = {
-        "title": None,
-        "abstract": None,
-        "url": base + row.find("a").get("href"),
-        "authors": None,
-        "year": None,
-        "publishing_company": None,
-        "publication_date": None,
-        "doi": None,
-        "pdf": None,
-        "pdf_text": None,
-        "mentioned_by": [],
-        "references": [],
-        "original_references": []
-    }
+    separator = ', '
+    link_array = []
+    divs = soup.find_all("div", class_="rslt")
+    for row in divs:
+        obj = {
+            "title": None,
+            "abstract": None,
+            "url": base + row.find("a").get("href"),
+            "authors": None,
+            "year": None,
+            "publishing_company": None,
+            "publication_date": None,
+            "doi": None,
+            "pdf": None,
+            "pdf_text": None,
+            "mentioned_by": [],
+            "references": [],
+            "original_references": []
+        }
 
-    obj = extract_title(row, obj)
-    obj = extract_pdf(row, obj)
-    obj = extract_authors(row, obj)
-    obj = mentioned_in(obj)
-    obj = extract_text_from_pdf(obj)
-    link_array.append(obj)
-    print(obj)
+        obj = extract_title(row, obj)
+        obj = extract_pdf(row, obj)
+        obj = extract_authors(row, obj)
+        obj = mentioned_in(obj)
+        obj = extract_text_from_pdf(obj)
+        link_array.append(obj)
+        print(obj)
+else:
+    try:
+        connection = psycopg2.connect(
+            user="postgres",
+            password="root",
+            host="127.0.0.1",
+            port="5432",
+            database="citlabdb"
+        )
+
+        # Create a cursor connection object to a PostgreSQL instance and print the connection properties.
+        cursor = connection.cursor()
+        postgreSQL_select_Query = "select * from paper"
+
+        cursor.execute(postgreSQL_select_Query)
+        papers = cursor.fetchall()
+
+        for row in papers:
+            '''print("Id = ", row[0])
+            print("Title = ", row[1])
+            print("Abstract  = ", row[2])
+            print("Type Paper = ", row[3])
+            print("Isbn = ", row[4])
+            print("Issn  = ", row[5])
+            print("Publishing_company = ", row[6])
+            print("Doi = ", row[7])
+            print("Pages  = ", row[8])
+            print("Site = ", row[9])
+            print("Created_on = ", row[10])
+            print("Year  = ", row[11])
+            print("N_citation = ", row[12])
+            print("N_version = ", row[13])
+            print("Rating  = ", row[14])
+            print("Eprint = ", row[15])
+            print("Pdf = ", row[16])
+            print("Picture  = ", row[17])
+            print("Added_on  = ", row[18])
+            print("Writers = ", row[19])
+            print("Original_references = ", row[20])
+            print("Pdf_text  = ", row[21])
+            print("References = ", row[22])'''
+
+            array_mentioned_id = []
+            cursor = connection.cursor()
+            postgreSQL_select_Query = "select * from paper_mentioned_in where from_paper_id = %s"
+
+            cursor.execute(postgreSQL_select_Query, (row[0],))
+            paper_mentioned_in = cursor.fetchall()
+
+            for row_cit in paper_mentioned_in:
+                '''print("Id = ", row_cit[0])
+                print("From paper id = ", row_cit[1])
+                print("To paper id  = ", row_cit[2])
+                print("\n")'''
+                array_mentioned_id.append(row_cit[2])
+
+            intestation = {"index": {"_index": "paper", "_id": row[0]}}
+            document = {
+                "title": row[1],
+                "abstract": row[2],
+                "type_paper": row[3],
+                "isbn": row[4],
+                "issn": row[5],
+                "publishing_company": row[6],
+                "doi": row[7],
+                "pages": row[8],
+                "site": row[9],
+                "created_on": row[10],
+                "year": row[11],
+                "n_citation": row[12],
+                "n_version": row[13],
+                "rating": row[14],
+                "eprint": row[15],
+                "pdf": row[16],
+                "picture": row[17],
+                "added_on": str(row[18]).split(" ")[0],
+                "writers": row[19],
+                "original_references": row[20],
+                "pdf_text": row[21],
+                "references": row[22],
+                "mentioned_in": array_mentioned_id
+            }
+            with open('documents.json', 'a') as file:
+                json.dump(intestation, file)
+                file.write("\n")
+                json.dump(document, file)
+                file.write("\n")
+
+        file.close()
+        # Handle the error throws by the command that is useful when using python while working with PostgreSQL
+    except Exception as error:
+        print("Error connecting to PostgreSQL database", error)
+        connection = None
+
+    # Close the database connection
+    finally:
+        if (connection != None):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is now closed")

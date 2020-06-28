@@ -1,12 +1,12 @@
-[INFO  - 2020-06-27T13:45:43.587Z] GhostDriver - Main - running on port 58858
-[INFO  - 2020-06-27T13:45:43.615Z] Session [7f1a58b0-b87c-11ea-b0fd-4dfc72f0d886] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
-[INFO  - 2020-06-27T13:45:43.616Z] Session [7f1a58b0-b87c-11ea-b0fd-4dfc72f0d886] - page.customHeaders:  - {}
-[INFO  - 2020-06-27T13:45:43.616Z] Session [7f1a58b0-b87c-11ea-b0fd-4dfc72f0d886] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"mac-unknown-64bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
-[INFO  - 2020-06-27T13:45:43.616Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: 7f1a58b0-b87c-11ea-b0fd-4dfc72f0d886
-[ERROR - 2020-06-27T13:45:55.966Z] Session [7f1a58b0-b87c-11ea-b0fd-4dfc72f0d886] - page.onError - msg: ReferenceError: Can't find variable: Set
+[INFO  - 2020-06-28T01:10:02.602Z] GhostDriver - Main - running on port 63707
+[INFO  - 2020-06-28T01:10:02.653Z] Session [18323180-b8dc-11ea-818b-819c07e5e072] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
+[INFO  - 2020-06-28T01:10:02.653Z] Session [18323180-b8dc-11ea-818b-819c07e5e072] - page.customHeaders:  - {}
+[INFO  - 2020-06-28T01:10:02.653Z] Session [18323180-b8dc-11ea-818b-819c07e5e072] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"mac-unknown-64bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
+[INFO  - 2020-06-28T01:10:02.653Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: 18323180-b8dc-11ea-818b-819c07e5e072
+[ERROR - 2020-06-28T01:10:07.896Z] Session [18323180-b8dc-11ea-818b-819c07e5e072] - page.onError - msg: ReferenceError: Can't find variable: Set
 
   phantomjs://platform/console++.js:263 in error
-[ERROR - 2020-06-27T13:45:55.966Z] Session [7f1a58b0-b87c-11ea-b0fd-4dfc72f0d886] - page.onError - stack:
+[ERROR - 2020-06-28T01:10:07.897Z] Session [18323180-b8dc-11ea-818b-819c07e5e072] - page.onError - stack:
   value (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:2)
   value (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:2)
   e (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:2)
@@ -16,6 +16,6 @@
   e (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:1)
 
   phantomjs://platform/console++.js:263 in error
-[ERROR - 2020-06-27T13:46:24.051Z] WebElementLocator - _handleLocateCommand - Element(s) NOT Found: GAVE UP. Search Stop Time: 1593265583999
+[ERROR - 2020-06-28T01:10:11.259Z] WebElementLocator - _handleLocateCommand - Element(s) NOT Found: GAVE UP. Search Stop Time: 1593306611212
 
   phantomjs://platform/console++.js:263 in error

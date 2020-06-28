@@ -18,6 +18,7 @@ from common.ncbi.ncbi_scraping import extract_pdf
 from common.ncbi.ncbi_scraping import extract_authors
 from common.ncbi.ncbi_scraping import mentioned_in
 from common.ncbi.ncbi_scraping import extract_text_from_pdf
+from django.db import connection
 
 # Create your views here.
 @api_view(['GET'])
@@ -65,25 +66,21 @@ def ncbi_scraping_view(request, *args, **kwargs):
                 if PDF_FLAG:
                     obj = extract_text_from_pdf(obj)
                 link_array.append(obj)
-            break
-        print("\n\n\n\n\n")
+
         for doc_obj in link_array:
-            parent_id = None
-            array_citated_by = []
-            doc = MyData.objects.create(title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
+            doc = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
                 site=doc_obj['url'],created_on=doc_obj["publication_date"],year=doc_obj['year'],n_citation=len(doc_obj["mentioned_by"]),pdf=doc_obj['pdf'],pdf_text=doc_obj['pdf_text'],
                 references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
             doc.save()
-            parent_id = doc.id
+
             for mention in doc_obj["mentioned_by"]:
-                ment = MyData.objects.create(title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
+                ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
                     site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
                     references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
                 ment.save()
-                array_citated_by.append(ment.id)
-            
-            print(parent_id)
-        print("\n\n\n\n\n")
+                with connection.cursor() as cursor:
+                    cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[doc.id, ment.id])
+                
 
         return Response(data='Successfully!', status=status.HTTP_200_OK)
     else:

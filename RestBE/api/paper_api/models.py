@@ -4,22 +4,23 @@ from category_api.models import Category
 
 # Create your models here.
 class Paper(models.Model):
-    title = models.CharField(max_length=200, blank=True)
+    id = models.AutoField(primary_key=True)
+    title = models.TextField(blank=True)
     abstract = models.TextField(null=True)
     type_paper = models.CharField(max_length=200, null=True, blank=True)
     isbn = models.CharField(max_length=200,null=True)
     issn = models.CharField(max_length=200,null=True)
-    publishing_company = models.CharField(max_length=200,null=True)
+    publishing_company = models.TextField(null=True)
     doi = models.CharField(max_length=200,null=True)
     pages = models.IntegerField(null=True)
     site = models.URLField(null=True)
-    created_on = models.DateField(null=True)
+    created_on = models.CharField(max_length=200,null=True)
     year = models.IntegerField(null=True)
     n_citation = models.IntegerField(default=0)
     n_version = models.IntegerField(default=1)
     rating = models.IntegerField(null=True,validators=[MinValueValidator(1), MaxValueValidator(5)])
     eprint = models.URLField(null=True)
-    pdf = models.URLField(null=True)
+    pdf = models.TextField(null=True)
     pdf_text = models.TextField(null=True)
     picture = models.URLField(null=True)
     added_on = models.DateTimeField(auto_now_add=True)
@@ -30,7 +31,7 @@ class Paper(models.Model):
     #searched_for = models.ManyToManyField(Research)
     have_category = models.ManyToManyField(Category)
     #created_by = models.ManyToManyField(Writer)
-    writers = models.CharField(max_length=200, null=True, blank=True)
+    writers = models.TextField(null=True, blank=True)
 
     class Meta:
         db_table = "paper"
