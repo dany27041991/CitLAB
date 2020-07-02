@@ -7,7 +7,7 @@ import textract
 import psycopg2
 import json
 
-SCRAPING_FLAG = True
+SCRAPING_FLAG = False
 
 driver = webdriver.PhantomJS(executable_path="/Users/danilogiovannico/Desktop/PROGETTO DATABASE/CitLAB/ScrapingNCBI/phantomjs/bin/phantomjs")
 
