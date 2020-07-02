@@ -47,6 +47,7 @@
                         <a class="card-link card-link-doc">Quoted from {{doc._source['mentioned_in'].length}}</a>
                         <!--<a class="card-link card-link-doc">All {{doc._source['n_version']}} versions</a>-->
                         <a class="card-link card-link-doc" (click)="openTree(treecontent, doc['_id'], checkValue(doc._source['title']))">Tree diagram for quotes</a>
+                        <a class="card-link card-link-doc" (click)="openTreeWriters(treewriterscontent, doc['_id'], checkValue(doc._source['title']), doc._source['writers'], doc._source['references'])">Writers diagram for quotes</a>
                       </div>
                     </div>
                   </div>
@@ -81,6 +82,59 @@
   <div class="modal-body">
     <div class="container" *ngIf="!flagTree; else errortree">
       <tree-diagram [data]="data"></tree-diagram>
+    </div>
+    <ng-template #errortree>
+      <div class="alert alert-danger" role="alert">
+        {{errorMessage}}
+      </div>
+    </ng-template>
+  </div>
+</ng-template>
+
+<!--WRITERS TREE-->
+<ng-template #treewriterscontent let-modal>
+  <div class="modal-header modal-header-tree">
+    <h4 class="modal-title" id="modal-basic-title-tree-writers">Diagram Tree {{titleTree.toUpperCase()}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="container pb-5" *ngIf="!flagTreeWriters; else errortree">
+      <h1>Select the author:</h1>
+      <select (change)="openTreePlotSelected($event.target.value)">
+        <option value="" selected>Scegli Autore</option>
+        <option *ngFor="let c of arrayWriterSelect" [ngValue]="c">{{c}}</option>
+      </select>
+      <div class="row" *ngIf="flagActivePlot && optionsCited.series[0]['data'].length > 0 && optionsCited.series[0]['data'].length < 30; else renderizeCitedChart">
+        <highcharts-chart
+          [Highcharts]="HighchartsCited"
+          constructorType="chart"
+          [options]="optionsCited"
+          [(update)]="updateFlag"
+          style="width: 1500px; height: 700px; display: block;"
+        ></highcharts-chart>
+      </div>
+      <ng-template #renderizeCitedChart>
+        <div class="row" *ngIf="optionsCited.series[0]['data'].length !== 0">
+          <highcharts-chart
+            [Highcharts]="HighchartsCited"
+            constructorType="chart"
+            [options]="optionsCited"
+            [(update)]="updateFlag"
+            style="width: 1500px; height: 1500px; display: block;"
+          ></highcharts-chart>
+        </div>
+      </ng-template>
+      <div class="row" *ngIf="flagActivePlot && optionsReferences.series[0]['data'].length > 0">
+        <highcharts-chart
+          [Highcharts]="HighchartsReferences"
+          constructorType="chart"
+          [options]="optionsReferences"
+          [(update)]="updateFlag"
+          style="width: 1500px; height: 1500px; display: block;"
+        ></highcharts-chart>
+      </div>
     </div>
     <ng-template #errortree>
       <div class="alert alert-danger" role="alert">

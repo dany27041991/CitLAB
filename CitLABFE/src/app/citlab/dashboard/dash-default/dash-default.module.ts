@@ -8,6 +8,7 @@ import {CatalogService} from '../../../services/catalog.service';
 import {NgxPaginationModule} from 'ngx-pagination';
 import {NgxSpinnerModule} from 'ngx-spinner';
 import {TreeDiagramModule} from 'angular2-tree-diagram';
+import { HighchartsChartModule } from 'highcharts-angular';
 
 @NgModule({
   declarations: [DashDefaultComponent],
@@ -19,7 +20,8 @@ import {TreeDiagramModule} from 'angular2-tree-diagram';
     NgxPaginationModule,
     NgxSpinnerModule,
     TreeDiagramModule,
-    NgbDatepickerModule
+    NgbDatepickerModule,
+    HighchartsChartModule
   ],
   providers: [CatalogService],
 })

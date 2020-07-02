@@ -42,6 +42,27 @@ export class CatalogService {
     });
   }
 
+  getWhoCite(author): any {
+   const query = {
+     'size': 10,
+     "query": {
+       "multi_match" : {
+         "query" : author,
+         "fields":     ["references","original_references","pdf_text","writers"],
+         "type": "phrase"
+       }
+     },
+     "sort": [
+       { "n_citation": { "order": "desc" } }
+     ]
+   };
+    return this.client.search({
+      index: 'paper',
+      body: query,
+      //filterPath: ['hits.hits._source']
+    });
+  }
+
   searchFullText(fulltext, size, page): any {
     this.launchNCBI(fulltext).subscribe(resp => {
       console.log(resp);

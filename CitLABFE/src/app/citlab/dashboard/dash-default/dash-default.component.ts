@@ -8,6 +8,30 @@ import {NgxSpinnerService} from 'ngx-spinner';
 import {NgbModal, ModalDismissReasons, NgbDateStruct, NgbCalendar} from '@ng-bootstrap/ng-bootstrap';
 import {NgForm} from '@angular/forms';
 import * as sw from 'stopword';
+import * as Highcharts from 'highcharts';
+
+import HC_exporting from 'highcharts/modules/exporting';
+HC_exporting(Highcharts);
+
+import HC_more from 'highcharts/highcharts-more';
+HC_more(Highcharts);
+
+import HC_sankey from 'highcharts/modules/sankey';
+import HC_depwheel from 'highcharts/modules/dependency-wheel';
+
+HC_sankey(Highcharts);
+HC_depwheel(Highcharts);
+
+Highcharts.setOptions({
+  title: {
+    style: {
+      color: 'tomato'
+    }
+  },
+  legend: {
+    enabled: false
+  }
+});
 
 @Component({
   selector: 'app-dash-default',
@@ -18,6 +42,7 @@ import * as sw from 'stopword';
 export class DashDefaultComponent implements OnInit {
   public docsList: Array<PaperInterface>;
   public flagTree = false;
+  public flagTreeWriters = false;
   public flagSearch = false;
   public flagError = false;
   public currentPage = 1;
@@ -56,6 +81,39 @@ export class DashDefaultComponent implements OnInit {
 
   isConnected = false;
   status: string;
+
+  HighchartsCited: typeof Highcharts = Highcharts;
+  optionsCited: Highcharts.Options = {
+    title: {
+      text: 'Author cited by other authors'
+    },
+
+    series: [{
+      keys: ['from', 'to', 'weight'],
+      data: [],
+      type: 'sankey',
+      name: 'Author citated by'
+    }]
+  };
+
+  HighchartsReferences: typeof Highcharts = Highcharts;
+  optionsReferences: Highcharts.Options = {
+    title: {
+      text: 'Authors cited in the bibliography of the following document'
+    },
+
+    series: [{
+      keys: ['from', 'to', 'weight'],
+      data: [],
+      type: 'dependencywheel',
+      name: 'Author quotes'
+    }]
+  };
+
+  public updateFlag = false;
+  public flagActivePlot = false;
+  public arrayWriterSelect = new Array();
+  public finalArrayWriters = new Array();
 
   constructor(private auth: AuthService, private catalog: CatalogService, private SpinnerService: NgxSpinnerService,
               private modalService: NgbModal, private calendar: NgbCalendar, private cd: ChangeDetectorRef) {
@@ -322,6 +380,155 @@ export class DashDefaultComponent implements OnInit {
         this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
       });
     });
+  }
+
+  checkIfExistIndex(temporaryArray, writer, type) {
+    if (type === 'Mention') {
+      let rilevatedIndex = null;
+      let index = 0;
+      temporaryArray.forEach(writertemp => {
+        if (writertemp.writer === writer) {
+          rilevatedIndex = index;
+        }
+        index++;
+      });
+      return rilevatedIndex;
+    } else {
+      let rilevatedIndex = null;
+      let index = 0;
+      this.optionsCited.series[0]['data'].forEach(writertemp => {
+        if (writertemp[0] === writer) {
+          rilevatedIndex = index;
+        }
+        index++;
+      });
+      return rilevatedIndex;
+    }
+
+  }
+
+  async openTreePlotSelected(author) {
+    this.SpinnerService.show();
+    this.updateFlag = false;
+    this.optionsReferences.series[0]['data'] = [];
+    this.optionsCited.series[0]['data'] = [];
+    let counter = 0;
+    if (author) {
+      this.flagActivePlot = true;
+      this.finalArrayWriters.forEach(writer => {
+        if (writer[0] === author) {
+          this.optionsReferences.series[0]['data'].push(writer);
+          counter++;
+        }
+      });
+    }
+
+    await this.catalog.getWhoCite(author).then(response => {
+      response.hits.hits.forEach((obj) => {
+        const arrayWhoCite = obj._source['writers'].split(',').map(s => s.trim());
+        arrayWhoCite.forEach((writer) => {
+          this.updateFlag = false;
+          const index = this.checkIfExistIndex(null, writer, 'Cited');
+          if (index || index === 0) {
+            this.optionsCited.series[0]['data'][index] = [this.optionsCited.series[0]['data'][index][0], this.optionsCited.series[0]['data'][index][1], (this.optionsCited.series[0]['data'][index][2] +1)];
+          } else {
+            if (writer !== author) {
+              this.optionsCited.series[0]['data'].push([writer, author, 1]);
+            }
+          }
+          this.updateFlag = true;
+        });
+      });
+    }, error => {
+      this.SpinnerService.hide();
+      console.error(error);
+    }).then(() => {
+      this.SpinnerService.hide();
+      console.log('Show Docs Completed!');
+    });
+    this.updateFlag = true;
+    this.SpinnerService.hide();
+  }
+
+  openTreeWriters(content, id, title, parentWriters, citatedWriters) {
+    this.optionsReferences.series[0]['data'] = [];
+    this.optionsCited.series[0]['data'] = [];
+    this.flagActivePlot = false;
+    this.flagTreeWriters = false;
+    this.errorMessage = '';
+
+    this.titleTree = title;
+    this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
+      this.closeResult = `Closed with: ${result}`;
+    }, (reason) => {
+      this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+    });
+
+    const arrayParentWriters = parentWriters.split(',').map(s => s.trim());
+    this.arrayWriterSelect = arrayParentWriters;
+
+    const citatedWritersArray = new Array();
+    if (citatedWriters) {
+      try {
+        const citatedWritersjson = citatedWriters.replace(/['"]+/g , '').replace('[', '[\n   ').replace('{' , '{\n      ')
+          .replace(/authors: /gi , '\"authors\":\"').replace(/, title: /gi , '\",\"title\":\"').replace(/}/gi , '\"}')
+          .replace(/\(/gi , '').replace(/\)/gi , '');
+        if (JSON.parse(citatedWritersjson).length > 0) {
+          JSON.parse(citatedWritersjson).forEach(obj => {
+            const writers = obj.authors.replace(', et al' , '');
+            const arrayWriters = writers.split(',');
+            arrayWriters.forEach(writer => {
+              if (writer.trim() !== 'None' && writer && writer.length < 35) {
+                let citatedObj = {
+                  'writer': null,
+                  'count': null
+                };
+                let index = this.checkIfExistIndex(citatedWritersArray, writer, 'Mention');
+                if (index  || index === 0) {
+                  citatedWritersArray[index]['count'] = citatedWritersArray[index]['count'] + 1;
+                } else {
+                  citatedObj.writer = writer.trim();
+                  citatedObj.count = 1;
+                  citatedWritersArray.push(citatedObj);
+                }
+              }
+            });
+          });
+        }
+        if (citatedWritersArray.length > 0) {
+          arrayParentWriters.forEach((citpar) => {
+            citatedWritersArray.forEach((citchild) => {
+              this.finalArrayWriters.push([citpar, citchild['writer'], citchild['count']]);
+                //this.options.series[0]['data'].push([citpar, citchild['writer'], citchild['count']]);
+            });
+          });
+        }
+      }
+      catch (err) {
+        this.flagTreeWriters = true;
+        this.errorMessage = 'For this document is not possible to get the chart.';
+      }
+    }
+
+    /*this.catalog.treeDiagram(id).subscribe((data) => {
+      this.flagTree = false;
+      this.SpinnerService.hide();
+      this.data.json = data;
+      this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
+        this.closeResult = `Closed with: ${result}`;
+      }, (reason) => {
+        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      });
+    }, err => {
+      this.SpinnerService.hide();
+      this.errorMessage = 'A problem has occurred. Try again. If the problem persists, contact the administration.';
+      this.flagTree = true;
+      this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
+        this.closeResult = `Closed with: ${result}`;
+      }, (reason) => {
+        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+      });
+    });*/
   }
 
   openAdvancedSearch(content) {
