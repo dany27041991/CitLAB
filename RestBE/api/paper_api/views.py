@@ -70,18 +70,26 @@ def ncbi_scraping_view(request, *args, **kwargs):
                     link_array.append(obj)
 
             for doc_obj in link_array:
-                doc = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
-                    site=doc_obj['url'],created_on=doc_obj["publication_date"],year=doc_obj['year'],n_citation=len(doc_obj["mentioned_by"]),pdf=doc_obj['pdf'],pdf_text=doc_obj['pdf_text'],
-                    references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
-                doc.save()
+                if Paper.objects.filter(title=doc_obj['title']).count() > 0:
+                    doc = Paper.objects.filter(title=doc_obj['title'])
+                else:
+                    doc = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=doc_obj['title'], abstract=doc_obj['abstract'],type_paper="PDF",publishing_company=doc_obj['publishing_company'],
+                        site=doc_obj['url'],created_on=doc_obj["publication_date"],year=doc_obj['year'],n_citation=len(doc_obj["mentioned_by"]),pdf=doc_obj['pdf'],pdf_text=doc_obj['pdf_text'],
+                        references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
+                    doc.save()
+                parentId = doc.id
 
                 for mention in doc_obj["mentioned_by"]:
-                    ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
-                        site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
-                        references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
-                    ment.save()
+                    if Paper.objects.filter(title=mention['title']).count() > 0:
+                        ment = Paper.objects.filter(title=mention['title'])
+                    else:
+                        ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
+                            site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
+                            references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
+                        ment.save()
+                    childrenId = ment.id
                     with connection.cursor() as cursor:
-                        cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[doc.id, ment.id])
+                        cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[parentId, childrenId])
                     
 
         return Response(data='Successfully!', status=status.HTTP_200_OK)
