@@ -19,7 +19,10 @@ def clear_text(text):
     return text.replace("\"", "'").replace("<b>", "").replace("</b>", "").replace("<span>", "").replace("</span>", "").replace("<sup>", "").replace("</sup>", "").replace("<em>", "").replace("</em>", "").rstrip()
 
 def extract_title(doc_page, obj, cit=True):
-    title = doc_page.find("div", class_="title").find("a").text
+    if doc_page.find("div", class_="title").find("a"):
+        title = doc_page.find("div", class_="title").find("a").text
+    else:
+        title = doc_page.find("div", class_="title").text
     title = clear_text(title)
     obj["title"] = title
     return obj
@@ -262,44 +265,37 @@ def extract_text_from_pdf(obj):
 
 def mentioned_in(obj):
     array_citation = []
-    count = 0
-    for el in obj["references"]:
-        if len(el["title"].lstrip().split(".")[0]) > 16:
-            #print(el["title"].lstrip().split(".")[0])
-            html_content = requests.get(base_url+el["title"].lstrip().split(".")[0]).text
-            soup = BeautifulSoup(html_content, "lxml")
+    #print(el["title"].lstrip().split(".")[0])
+    html_content = requests.get(obj["url"]+'citedby').text
+    soup = BeautifulSoup(html_content, "lxml")
 
-            separator = ', '
-            link_array = []
-            divs = soup.find_all("div", class_="rslt")
-            for row in divs:
-                obj_cit = {
-                    "title": None,
-                    "abstract": None,
-                    "url": base + row.find("a").get("href"),
-                    "authors": None,
-                    "year": None,
-                    "publishing_company": None,
-                    "publication_date": None,
-                    "doi": None,
-                    "pdf": None,
-                    "pdf_text": None,
-                    "mentioned_by": [],
-                    "references": [],
-                    "original_references": []
-                }
-                obj_cit = extract_title(row, obj_cit)
-                if PDF_FLAG:
-                    obj_cit = extract_pdf(row, obj_cit)
-                obj_cit = extract_authors(row, obj_cit)
-                if PDF_FLAG:
-                    obj_cit = extract_text_from_pdf(obj_cit)
-                array_citation.append(obj_cit)
-                if count > 5:
-                    break
-                count = count + 1
-            if count > 5:
-                break
+    separator = ', '
+    link_array = []
+    divs = soup.find_all("div", class_="rprt")
+    for row in divs:
+        obj_cit = {
+            "title": None,
+            "abstract": None,
+            "url": base + row.find("a").get("href"),
+            "authors": None,
+            "year": None,
+            "publishing_company": None,
+            "publication_date": None,
+            "doi": None,
+            "pdf": None,
+            "pdf_text": None,
+            "mentioned_by": [],
+            "references": [],
+            "original_references": []
+        }
+        obj_cit = extract_title(row, obj_cit)
+        if PDF_FLAG:
+            obj_cit = extract_pdf(row, obj_cit)
+        obj_cit = extract_authors(row, obj_cit)
+        if PDF_FLAG:
+            obj_cit = extract_text_from_pdf(obj_cit)
+        array_citation.append(obj_cit)
+
     obj["mentioned_by"] = array_citation
     return obj
 
