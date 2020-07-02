@@ -27,7 +27,7 @@ def ncbi_scraping_view(request, *args, **kwargs):
     if request.GET.get('q', None):
         query = request.GET.get('q', None).replace(" ","+")
         PDF_FLAG = True
-        SCRAPING_FLAG = False
+        SCRAPING_FLAG = True
         if SCRAPING_FLAG:
             base = "https://www.ncbi.nlm.nih.gov"
             base_api = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pmc/?format=citation&id="
@@ -76,22 +76,24 @@ def ncbi_scraping_view(request, *args, **kwargs):
                         references=str(doc_obj['references']),original_references=str(doc_obj['original_references']),writers=doc_obj["authors"])
                     doc.save()
                     parentId = doc.id
+                else:
+                    parentId = Paper.objects.filter(title=doc_obj['title']).values()[0]['id']
 
-                    for mention in doc_obj["mentioned_by"]:
-                        if Paper.objects.filter(title=mention['title']).count() > 0:
-                            childrenId = Paper.objects.filter(title=mention['title']).values()[0]['id']
-                        else:
-                            ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
-                                site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
-                                references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
-                            ment.save()
-                            childrenId = ment.id
-                        try:
-                            with connection.cursor() as cursor:
-                                if parentId is not childrenId:
-                                    cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[parentId, childrenId])
-                        except Exception as error:
-                            pass
+                for mention in doc_obj["mentioned_by"]:
+                    if Paper.objects.filter(title=mention['title']).count() > 0:
+                        childrenId = Paper.objects.filter(title=mention['title']).values()[0]['id']
+                    else:
+                        ment = Paper.objects.create(id=(Paper.objects.all().order_by("-id")[0].id+1),title=mention['title'], abstract=mention['abstract'],type_paper="PDF",publishing_company=mention['publishing_company'],
+                            site=mention['url'],created_on=mention["publication_date"],year=mention['year'],n_citation=len(mention["mentioned_by"]),pdf=mention['pdf'],pdf_text=mention['pdf_text'],
+                            references=str(mention['references']),original_references=str(mention['original_references']),writers=mention["authors"])
+                        ment.save()
+                        childrenId = ment.id
+                    try:
+                        with connection.cursor() as cursor:
+                            if parentId is not childrenId:
+                                cursor.execute('INSERT INTO paper_mentioned_in (from_paper_id, to_paper_id) VALUES (%s,%s)',[parentId, childrenId])
+                    except Exception as error:
+                        pass
 
         return Response(data='Successfully!', status=status.HTTP_200_OK)
     else:

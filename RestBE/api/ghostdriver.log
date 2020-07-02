@@ -1,12 +1,12 @@
-[INFO  - 2020-07-02T22:43:38.590Z] GhostDriver - Main - running on port 54891
-[INFO  - 2020-07-02T22:43:38.632Z] Session [7893dc40-bcb5-11ea-9959-01d2307d5e2a] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
-[INFO  - 2020-07-02T22:43:38.632Z] Session [7893dc40-bcb5-11ea-9959-01d2307d5e2a] - page.customHeaders:  - {}
-[INFO  - 2020-07-02T22:43:38.632Z] Session [7893dc40-bcb5-11ea-9959-01d2307d5e2a] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"mac-unknown-64bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
-[INFO  - 2020-07-02T22:43:38.632Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: 7893dc40-bcb5-11ea-9959-01d2307d5e2a
-[ERROR - 2020-07-02T22:43:43.764Z] Session [7893dc40-bcb5-11ea-9959-01d2307d5e2a] - page.onError - msg: ReferenceError: Can't find variable: Set
+[INFO  - 2020-07-02T23:31:12.187Z] GhostDriver - Main - running on port 58589
+[INFO  - 2020-07-02T23:31:12.243Z] Session [1d7630e0-bcbc-11ea-988e-1fa69dc077d8] - page.settings - {"XSSAuditingEnabled":false,"javascriptCanCloseWindows":true,"javascriptCanOpenWindows":true,"javascriptEnabled":true,"loadImages":true,"localToRemoteUrlAccessEnabled":false,"userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1","webSecurityEnabled":true}
+[INFO  - 2020-07-02T23:31:12.243Z] Session [1d7630e0-bcbc-11ea-988e-1fa69dc077d8] - page.customHeaders:  - {}
+[INFO  - 2020-07-02T23:31:12.243Z] Session [1d7630e0-bcbc-11ea-988e-1fa69dc077d8] - Session.negotiatedCapabilities - {"browserName":"phantomjs","version":"2.1.1","driverName":"ghostdriver","driverVersion":"1.2.0","platform":"mac-unknown-64bit","javascriptEnabled":true,"takesScreenshot":true,"handlesAlerts":false,"databaseEnabled":false,"locationContextEnabled":false,"applicationCacheEnabled":false,"browserConnectionEnabled":false,"cssSelectorsEnabled":true,"webStorageEnabled":false,"rotatable":false,"acceptSslCerts":false,"nativeEvents":true,"proxy":{"proxyType":"direct"}}
+[INFO  - 2020-07-02T23:31:12.243Z] SessionManagerReqHand - _postNewSessionCommand - New Session Created: 1d7630e0-bcbc-11ea-988e-1fa69dc077d8
+[ERROR - 2020-07-02T23:31:14.535Z] Session [1d7630e0-bcbc-11ea-988e-1fa69dc077d8] - page.onError - msg: ReferenceError: Can't find variable: Set
 
   phantomjs://platform/console++.js:263 in error
-[ERROR - 2020-07-02T22:43:43.764Z] Session [7893dc40-bcb5-11ea-9959-01d2307d5e2a] - page.onError - stack:
+[ERROR - 2020-07-02T23:31:14.535Z] Session [1d7630e0-bcbc-11ea-988e-1fa69dc077d8] - page.onError - stack:
   value (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:2)
   value (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:2)
   e (https://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIConfigJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js?v=1:2)
