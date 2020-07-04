@@ -430,7 +430,8 @@ export class DashDefaultComponent implements OnInit {
           this.updateFlag = false;
           const index = this.checkIfExistIndex(null, writer, 'Cited');
           if (index || index === 0) {
-            this.optionsCited.series[0]['data'][index] = [this.optionsCited.series[0]['data'][index][0], this.optionsCited.series[0]['data'][index][1], (this.optionsCited.series[0]['data'][index][2] +1)];
+            this.optionsCited.series[0]['data'][index] = [this.optionsCited.series[0]['data'][index][0],
+              this.optionsCited.series[0]['data'][index][1], (this.optionsCited.series[0]['data'][index][2] +1)];
           } else {
             if (writer !== author) {
               this.optionsCited.series[0]['data'].push([writer, author, 1]);
@@ -509,26 +510,6 @@ export class DashDefaultComponent implements OnInit {
         this.errorMessage = 'For this document is not possible to get the chart.';
       }
     }
-
-    /*this.catalog.treeDiagram(id).subscribe((data) => {
-      this.flagTree = false;
-      this.SpinnerService.hide();
-      this.data.json = data;
-      this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-      });
-    }, err => {
-      this.SpinnerService.hide();
-      this.errorMessage = 'A problem has occurred. Try again. If the problem persists, contact the administration.';
-      this.flagTree = true;
-      this.modalService.open(content, {windowClass: 'modal-tree-class'}).result.then((result) => {
-        this.closeResult = `Closed with: ${result}`;
-      }, (reason) => {
-        this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
-      });
-    });*/
   }
 
   openAdvancedSearch(content) {

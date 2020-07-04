@@ -27,7 +27,7 @@ def ncbi_scraping_view(request, *args, **kwargs):
     if request.GET.get('q', None):
         query = request.GET.get('q', None).replace(" ","+")
         PDF_FLAG = True
-        SCRAPING_FLAG = True
+        SCRAPING_FLAG = False
         if SCRAPING_FLAG:
             base = "https://www.ncbi.nlm.nih.gov"
             base_api = "https://api.ncbi.nlm.nih.gov/lit/ctxp/v1/pmc/?format=citation&id="

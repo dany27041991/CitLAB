@@ -1,5 +1,5 @@
 import { Injectable, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { CookieService } from 'ngx-cookie-service';
 import { Router } from '@angular/router';
@@ -19,6 +19,22 @@ export class AuthService {
 
   login(email: string, password: string) {
     return this.http.post(environment.url + 'auth/token/login', { email: email, password: password });
+  }
+
+  registration(form) {
+    const options = {
+      headers: new HttpHeaders().set('Content-Type', 'application/json')
+    };
+
+    return this.http.post(environment.url + 'auth/users/', {
+      first_name: form.value['first_name'],
+      last_name: form.value['last_name'],
+      username: form.value['username'],
+      personal_phone: '',
+      email: form.value['email'],
+      password: form.value['password'],
+      re_password: form.value['password']
+    }, options);
   }
 
   isAuthenticated(): boolean {
